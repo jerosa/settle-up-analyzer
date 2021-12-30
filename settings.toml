@@ -1,0 +1,7 @@
+workdir = ""
+filename_to_process = "transactions.csv"
+expenses_excel_filename = "expenses.xlsx"
+
+user_to_analyse = "user"
+
+category_filters = [[], ["Category1", "Category2"], ["Category1", "Category2", "Category3"]]
