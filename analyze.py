@@ -14,35 +14,46 @@ def get_plot_filename(workdir: str, filename: str):
     return os.path.join(workdir, filename)
 
 
-class Analyser:
+class Analyzer:
     def __init__(self) -> None:
         self.workdir = settings["workdir"]
+        self.plotdir = os.path.join(self.workdir, "plots")
+
+    def read_excel(self):
         excel_name = settings["expenses_excel_filename"]
 
         filepath = os.path.join(self.workdir, excel_name)
-        logger.info("Reading excel")
-        self.df: DataFrame = pd.read_excel(filepath)
+        logger.debug(f"Reading excel {filepath}")
+        df: DataFrame = pd.read_excel(
+            filepath,
+            converters={"Date & time": pd.to_datetime},
+            index_col="Date & time",
+        )
 
-        logger.info("Total expenses %s", self.df["Amount"].sum())
+        # df.loc[:, "YearMonth"] = df.index.to_period("M")
+        df.loc[:, "Year"] = df.index.year
+        df.loc[:, "Month"] = df.index.month
 
-    def plot_total_month(self):
+        return df
+
+    def plot_total_month(self, df: DataFrame, year: int):
         logger.info("Starting total expenses by month")
         sns.barplot(
             x="Month",
             y="Amount",
-            data=self.df,
+            data=df,
             estimator=sum,
             ci=None,
         )
-        plt.title(f"Gastos por mes", fontsize=14)
-        plt.savefig(get_plot_filename(self.workdir, "Montly Expenses"))
+        plt.title(f"Monthly Expenses - {year}", fontsize=14)
+        plt.savefig(get_plot_filename(self.plotdir, f"{year}_Monthly Expenses"))
         plt.close()
 
-    def plot_by_category(self):
-        logger.info("Starting plots by category")
+    def plot_by_category(self, df: DataFrame, year: int):
+        logger.info(f"{year} - Starting plots by category")
         excluded_cols = settings["category_filters"]
         for idx, exc_col in enumerate(excluded_cols):
-            cat_df = self.df.loc[~self.df["Category"].isin(exc_col)]
+            cat_df = df.loc[~df["Category"].isin(exc_col)]
             g = sns.catplot(
                 x="Month",
                 y="Amount",
@@ -54,19 +65,22 @@ class Analyser:
                 ci=None,
             )
             g.fig.subplots_adjust(top=0.92)
-            g.fig.suptitle(f"Gastos por categorias", fontsize=20)
+            g.fig.suptitle(f"Expenses by category - {year}", fontsize=20)
             plt.savefig(
-                get_plot_filename(self.workdir, f"Expenses by Category - {idx}")
+                get_plot_filename(
+                    self.plotdir, f"{year}_Expenses by Category and Month - {idx}"
+                )
             )
             plt.close()
 
-    def plot_monthly(self):
-        logger.info("Starting monthly plots")
-        workdir = os.path.join(self.workdir, "plots")
+    def plot_monthly(self, df: DataFrame, year: int):
+        logger.info(f"{year} - Starting monthly plots")
 
-        for month in self.df["Month"].unique().tolist():
+        year_dir = os.path.join(self.plotdir, str(year))
+        os.makedirs(year_dir, exist_ok=True)
+        for month in df["Month"].unique().tolist():
             logger.info(f"Processing month {month}")
-            df_month = self.df.loc[self.df["Month"] == month]
+            df_month = df.loc[df["Month"] == month]
             g = sns.catplot(
                 data=df_month,
                 x="Category",
@@ -77,9 +91,9 @@ class Analyser:
                 height=8,
                 aspect=1,
             )
-            g.fig.suptitle(f"Expenses 2021-{month}")
+            g.fig.suptitle(f"Expenses {year}-{month}")
             g.ax.tick_params(axis="x", labelrotation=45)
-            plt.savefig(get_plot_filename(workdir, f"{month:02d}_expense"))
+            plt.savefig(get_plot_filename(year_dir, f"{year}_{month:02d}_Expenses"))
             plt.close()
 
             df_j = (
@@ -101,14 +115,25 @@ class Analyser:
             [t.set_fontsize(12) for t in p]
             [t.set_fontsize(12) for t in l]
             plt.axis("equal")
-            plt.title(f"Gastos por categorias - Mes {month}", fontsize=14)
+            plt.title(f"Expenses by category {year}-{month}", fontsize=14)
             plt.legend(df_j)
-            pie.savefig(get_plot_filename(workdir, f"{month:02d}_by_category"))
+            pie.savefig(
+                get_plot_filename(year_dir, f"{year}_{month:02d}_Expenses_by_category")
+            )
             plt.close()
+
+    def start(self):
+        logger.info("Starting analyser")
+        df = self.read_excel()
+        logger.info("Total expenses %s", df["Amount"].sum())
+        for year in df.loc[:, "Year"].unique().tolist():
+            logger.info(f"Analyzing {year}")
+            year_df = df.loc[df["Year"] == year]
+            self.plot_total_month(year_df, year)
+            self.plot_by_category(year_df, year)
+            self.plot_monthly(year_df, year)
 
 
 if __name__ == "__main__":
-    analyser = Analyser()
-    analyser.plot_total_month()
-    analyser.plot_by_category()
-    analyser.plot_monthly()
+    analyzer = Analyzer()
+    analyzer.start()

@@ -118,9 +118,9 @@ class SettleUpProcessor:
 
         _, ax = plt.subplots(figsize=(10, 10))
         ax = sns.scatterplot(data=df_sum)
-        ax.set_xlabel("Mes")
+        ax.set_xlabel("Month")
         ax.set_ylabel("€")
-        ax.set_title("Gastos totales mensuales")
+        ax.set_title("Monthly total expenses")
         ax.tick_params(axis="x", labelrotation=45)
         plt.savefig(f"{self.workdir}/total_expenses")
         plt.close()
