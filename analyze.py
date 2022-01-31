@@ -36,6 +36,23 @@ class Analyzer:
 
         return df
 
+    def plot_total(self, df: DataFrame):
+        logger.info("Starting total expenses")
+        g = sns.catplot(
+            x="Year",
+            y="Amount",
+            col="Category",
+            data=df,
+            estimator=sum,
+            col_wrap=4,
+            ci=None,
+            kind="bar",
+        )
+        g.fig.subplots_adjust(top=0.92)
+        g.fig.suptitle(f"Expenses", fontsize=20)
+        plt.savefig(get_plot_filename(self.plotdir, f"Total Expenses"))
+        plt.close()
+
     def plot_total_month(self, df: DataFrame, year: int):
         logger.info("Starting total expenses by month")
         sns.barplot(
@@ -126,12 +143,13 @@ class Analyzer:
         logger.info("Starting analyser")
         df = self.read_excel()
         logger.info("Total expenses %s", df["Amount"].sum())
-        for year in df.loc[:, "Year"].unique().tolist():
-            logger.info(f"Analyzing {year}")
-            year_df = df.loc[df["Year"] == year]
-            self.plot_total_month(year_df, year)
-            self.plot_by_category(year_df, year)
-            self.plot_monthly(year_df, year)
+        self.plot_total(df)
+        # for year in df.loc[:, "Year"].unique().tolist():
+        #     logger.info(f"Analyzing {year}")
+        #     year_df = df.loc[df["Year"] == year]
+        #     self.plot_total_month(year_df, year)
+        #     self.plot_by_category(year_df, year)
+        #     self.plot_monthly(year_df, year)
 
 
 if __name__ == "__main__":
