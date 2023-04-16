@@ -114,7 +114,7 @@ class SettleUpProcessor:
     def total_expenses(self):
         print(self.df.loc[:, self.users].sum().head(20))
         df_sum = self.df.groupby([pd.Grouper(freq="M")])[self.users].sum()
-        print(df_sum.head(20))
+        print(df_sum.head(100))
 
         _, ax = plt.subplots(figsize=(10, 10))
         ax = sns.scatterplot(data=df_sum)
