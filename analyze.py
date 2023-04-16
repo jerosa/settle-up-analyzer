@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from pandas import DataFrame
-
+from datetime import datetime
 from config import logger, settings
 
 sns.set_style("whitegrid")
@@ -36,7 +36,7 @@ class Analyzer:
 
         return df
 
-    def plot_total(self, df: DataFrame):
+    def plot_total_expenses(self, df: DataFrame):
         logger.info("Starting total expenses")
         g = sns.catplot(
             x="Year",
@@ -49,21 +49,22 @@ class Analyzer:
             kind="bar",
         )
         g.fig.subplots_adjust(top=0.92)
-        g.fig.suptitle(f"Expenses", fontsize=20)
-        plt.savefig(get_plot_filename(self.plotdir, f"Total Expenses"))
+        g.fig.suptitle(f"Total Expenses by Category", fontsize=20)
+        plt.savefig(get_plot_filename(self.plotdir, f"Total Expenses by Category"))
         plt.close()
 
-    def plot_total_month(self, df: DataFrame, year: int):
-        logger.info("Starting total expenses by month")
+    def plot_monthly_balance(self, df: DataFrame, year: int):
+        logger.info("Starting total expenses/ingress by month")
         sns.barplot(
             x="Month",
             y="Amount",
+            hue="Type",
             data=df,
             estimator=sum,
             ci=None,
         )
-        plt.title(f"Monthly Expenses - {year}", fontsize=14)
-        plt.savefig(get_plot_filename(self.plotdir, f"{year}_Monthly Expenses"))
+        plt.title(f"Monthly Balance - {year}", fontsize=14)
+        plt.savefig(get_plot_filename(self.plotdir, f"{year}_Monthly Balance"))
         plt.close()
 
     def plot_by_category(self, df: DataFrame, year: int):
@@ -139,17 +140,39 @@ class Analyzer:
             )
             plt.close()
 
+    def summary(self):
+        df = self.read_excel()
+        df_expenses = df.loc[df["Type"] == "Expense"]
+        df_ingress = df.loc[df["Type"] == "Ingress"]
+
+        expenses_year = df_expenses.groupby("Year")["Amount"].sum()
+        ingress_year = df_ingress.groupby("Year")["Amount"].sum()
+        summary = pd.concat(
+            [expenses_year, ingress_year], axis=1, keys=["Expenses", "Ingress"]
+        )
+        summary.fillna(0, inplace=True)
+        summary["Savings"] = summary["Ingress"] - summary["Expenses"]
+        summary["Savings %"] = (
+            (summary["Ingress"] - summary["Expenses"]) / summary["Ingress"] * 100
+        )
+        logger.info("Total balance \n%s", summary)
+        return df, df_expenses, df_ingress
+
     def start(self):
         logger.info("Starting analyser")
-        df = self.read_excel()
-        logger.info("Total expenses %s", df["Amount"].sum())
-        self.plot_total(df)
-        # for year in df.loc[:, "Year"].unique().tolist():
-        #     logger.info(f"Analyzing {year}")
-        #     year_df = df.loc[df["Year"] == year]
-        #     self.plot_total_month(year_df, year)
-        #     self.plot_by_category(year_df, year)
-        #     self.plot_monthly(year_df, year)
+
+        df, df_expenses, df_ingress = self.summary()
+
+        self.plot_total_expenses(df_expenses)
+        for year in df_expenses.loc[:, "Year"].unique().tolist():
+            if year != datetime.now().year:
+                continue
+            logger.info(f"Analyzing {year}")
+            year_expenses_df = df_expenses.loc[df_expenses["Year"] == year]
+            year_df = df.loc[df["Year"] == year]
+            self.plot_monthly_balance(year_df, year)
+            self.plot_by_category(year_expenses_df, year)
+            self.plot_monthly(year_expenses_df, year)
 
 
 if __name__ == "__main__":

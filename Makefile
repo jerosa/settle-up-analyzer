@@ -3,7 +3,7 @@
 
 PEX := pex
 VIRTUALENV := python3 -m venv
-PIP := venv/bin/pip
+PIP := .venv/bin/pip
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -28,18 +28,18 @@ for line in sys.stdin:
 endef
 export PRINT_HELP_PYSCRIPT
 
-BROWSER := python -c "$$BROWSER_PYSCRIPT"
+BROWSER := python3 -c "$$BROWSER_PYSCRIPT"
 
 help: ## show Makefile help
-	@python scripts/make_help.py < $(MAKEFILE_LIST)
+	@python3 scripts/make_help.py < $(MAKEFILE_LIST)
 	
 	
 env-create: ## Create virtual env
-	@python -m venv .venv
+	@python3 -m venv .venv
 	make pip-install
 
 pip-install: ## Install requirements
-	pip install -r requirements.txt
+	$(PIP) install -r requirements.txt
 
 
 
