@@ -45,7 +45,7 @@ class Analyzer:
             data=df,
             estimator=sum,
             col_wrap=4,
-            ci=None,
+            errorbar=None,
             kind="bar",
         )
         g.fig.subplots_adjust(top=0.92)
@@ -61,7 +61,7 @@ class Analyzer:
             hue="Type",
             data=df,
             estimator=sum,
-            ci=None,
+            errorbar=None,
         )
         plt.title(f"Monthly Balance - {year}", fontsize=14)
         plt.savefig(get_plot_filename(self.plotdir, f"{year}_Monthly Balance"))
@@ -80,7 +80,7 @@ class Analyzer:
                 kind="bar",
                 col_wrap=4,
                 estimator=sum,
-                ci=None,
+                errorbar=None,
             )
             g.fig.subplots_adjust(top=0.92)
             g.fig.suptitle(f"Expenses by category - {year}", fontsize=20)
@@ -105,7 +105,7 @@ class Analyzer:
                 y="Amount",
                 kind="bar",
                 estimator=sum,
-                ci=None,
+                errorbar=None,
                 height=8,
                 aspect=1,
             )
