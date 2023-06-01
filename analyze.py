@@ -141,6 +141,7 @@ class Analyzer:
             plt.close()
 
     def summary(self):
+        logger.info("SUMMARY STARTING")
         df = self.read_excel()
         df_expenses = df.loc[df["Type"] == "Expense"]
         df_ingress = df.loc[df["Type"] == "Ingress"]
@@ -155,6 +156,7 @@ class Analyzer:
         summary["Savings %"] = (
             (summary["Ingress"] - summary["Expenses"]) / summary["Ingress"] * 100
         )
+        self.df_summary = summary.round(2)
         logger.info("Total balance \n%s", summary)
         return df, df_expenses, df_ingress
 

@@ -38,10 +38,14 @@ env-create: ## Create virtual env
 	@python3 -m venv .venv
 	make pip-install
 
+env-compile: ## Compile env
+	pip-compile requirements.in
+
+env-sync: ## Sync env
+	pip-sync requirements.txt requirements-dev.txt
+
 pip-install: ## Install requirements
 	$(PIP) install -r requirements.txt
-
-
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
