@@ -10,7 +10,6 @@ from analyze import Analyzer
 dash.register_page(__name__)
 
 
-print("CATEGORIES")
 _, df_expenses, _ = Analyzer().summary()
 
 
@@ -94,7 +93,6 @@ def filter_category(active_tab, categories, year):
             height=800,
             category_orders={"Category": (categories)},
         )
-        return fig
     else:
         df_filtered = df_expenses.loc[df_expenses.Year == year]
         fig = px.histogram(
@@ -107,4 +105,14 @@ def filter_category(active_tab, categories, year):
             color="Category",
             category_orders={"Category": _categories},
         )
-        return fig
+    fig.for_each_yaxis(lambda y: y.update(title=""))
+    fig.add_annotation(
+        x=-0.05,
+        y=0.5,
+        text="€",
+        showarrow=False,
+        textangle=-90,
+        xref="paper",
+        yref="paper",
+    )
+    return fig

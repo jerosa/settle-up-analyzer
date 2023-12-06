@@ -5,3 +5,5 @@ seaborn
 openpyxl
 dash
 dash-bootstrap-components
+
+statsmodels

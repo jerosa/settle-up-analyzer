@@ -1,6 +1,9 @@
 import dash
 import dash_bootstrap_components as dbc
+# import plotly.io as pio
 from dash import Input, Output, State, dcc, html
+
+# pio.templates.default = "plotly_dark"
 
 app = dash.Dash(
     __name__,

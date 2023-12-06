@@ -141,7 +141,7 @@ class Analyzer:
             plt.close()
 
     def summary(self):
-        logger.info("SUMMARY STARTING")
+        logger.debug("SUMMARY STARTING")
         df = self.read_excel()
         df_expenses = df.loc[df["Type"] == "Expense"]
         df_ingress = df.loc[df["Type"] == "Ingress"]
@@ -157,8 +157,27 @@ class Analyzer:
             (summary["Ingress"] - summary["Expenses"]) / summary["Ingress"] * 100
         )
         self.df_summary = summary.round(2)
-        logger.info("Total balance \n%s", summary)
+        logger.debug("Total balance \n%s", summary)
         return df, df_expenses, df_ingress
+
+    def month_summary(self):
+        df = self.read_excel()
+        df_ingress = df.loc[df["Type"] == "Ingress"]
+        per = df_ingress.index.to_period("M")
+        ingress_year_month = df_ingress.groupby(per)["Amount"].sum()
+
+        df_expenses = df.loc[df["Type"] == "Expense"]
+        per = df_expenses.index.to_period("M")
+        expenses_year_month = df_expenses.groupby(per)["Amount"].sum()
+        summary = pd.concat(
+            [expenses_year_month, ingress_year_month],
+            axis=1,
+            keys=["Expenses", "Ingress"],
+        )
+        summary.fillna(0, inplace=True)
+        summary["Savings"] = summary["Ingress"] - summary["Expenses"]
+        summary.index = summary.index.to_timestamp()
+        return summary
 
     def start(self):
         logger.info("Starting analyser")

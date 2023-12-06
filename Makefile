@@ -39,6 +39,7 @@ env-create: ## Create virtual env
 	make pip-install
 
 env-compile: ## Compile env
+	pip-compile requirements-dev.in
 	pip-compile requirements.in
 
 env-sync: ## Sync env
