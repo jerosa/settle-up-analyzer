@@ -37,6 +37,7 @@ help: ## show Makefile help
 env-create: ## Create virtual env
 	@python3 -m venv .venv
 	make pip-install
+	@.venv/bin/python3 -m pip install pip-tools
 
 env-compile: ## Compile env
 	pip-compile requirements-dev.in
@@ -47,6 +48,9 @@ env-sync: ## Sync env
 
 pip-install: ## Install requirements
 	$(PIP) install -r requirements.txt
+
+run: ## run app
+	@python3 app.py
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
