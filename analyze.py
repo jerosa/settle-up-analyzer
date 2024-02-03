@@ -30,7 +30,6 @@ class Analyzer:
             index_col="Date & time",
         )
 
-        # df.loc[:, "YearMonth"] = df.index.to_period("M")
         df.loc[:, "Year"] = df.index.year
         df.loc[:, "Month"] = df.index.month
 
