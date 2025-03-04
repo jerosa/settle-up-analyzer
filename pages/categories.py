@@ -6,6 +6,7 @@ import plotly.express as px
 from dash import Input, Output, callback, dcc
 
 from analyze import Analyzer
+from pages.utils import generate_year_dropdown
 
 dash.register_page(__name__)
 
@@ -23,8 +24,8 @@ def get_categories(df):
 
 
 _categories = get_categories(df_expenses)
-_years = df_expenses.Year.unique().tolist()
-_current_year = datetime.now().year
+years = df_expenses.Year.unique().tolist()
+current_year = datetime.now().year
 
 
 layout = dbc.Container(
@@ -49,18 +50,7 @@ layout = dbc.Container(
                 dbc.Tab(
                     label="By year",
                     tab_id="year",
-                    children=[
-                        dcc.Dropdown(
-                            id="year-filter",
-                            options=[{"label": year, "value": year} for year in _years],
-                            placeholder="Select a Year",
-                            multi=False,
-                            clearable=False,
-                            value=_current_year,
-                            style={"width": "70px"},
-                            # className="xs-3",
-                        ),
-                    ],
+                    children=generate_year_dropdown(years, current_year),
                 ),
             ],
             id="categories-tabs",

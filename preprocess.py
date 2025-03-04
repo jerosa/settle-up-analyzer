@@ -49,7 +49,13 @@ class SettleUpProcessor:
         self.workdir = settings["workdir"]
         self.users = np.empty(0, dtype=object)
 
+    def _get_latest_filename(self):
+        items = [f for f in os.listdir(self.workdir) if f.endswith("transactions.csv")]
+        return sorted(items, reverse=True)[0]
+
     def read_raw_csv(self):
+        if settings["filename_to_process"] == "auto":
+            settings["filename_to_process"] = self._get_latest_filename()
         filepath = os.path.join(self.workdir, settings["filename_to_process"])
 
         self.df = pd.read_csv(

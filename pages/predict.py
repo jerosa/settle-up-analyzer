@@ -20,8 +20,8 @@ layout = dbc.Container(
     [
         html.H1(children="Predict"),
         html.Hr(),
-        html.P(f"Current alquiler 350"),
-        dbc.Input(id="input-number", type="number", min=0, value=800, step=100),
+        html.P(f"Change 'Nomina' Ingress to a fixed value:"),
+        dbc.Input(id="input-number", type="number", min=0, value=2400, step=100),
         dcc.Graph(id="pred-line"),
         dcc.Graph(id="pred-bar"),
     ]
@@ -37,19 +37,19 @@ def calc_preds(df, value):
     expenses_per = df_expenses.index.to_period("M")
     expenses_year_month = df_expenses.groupby(expenses_per)["Amount"].sum()
 
-    # predict
-    df_expenses_predict = df_expenses
-    df_expenses_predict.loc[df_expenses_predict.Category == "Alquiler"] = value
-    expenses_predict_year_month = df_expenses_predict.groupby(expenses_per)["Amount"].sum()
+    # Change ingress to a fixed value
+    df_ingress_predict = df_ingress
+    df_ingress_predict.loc[df_ingress_predict.Category == "Nomina"] = value
+    ingress_predict_year_month = df_ingress_predict.groupby(ingress_per)["Amount"].sum()
 
     summary = pd.concat(
-        [expenses_year_month, expenses_predict_year_month, ingress_year_month],
+        [expenses_year_month, ingress_predict_year_month, ingress_year_month],
         axis=1,
-        keys=["Expenses", "Expenses P", "Ingress"],
+        keys=["Expenses", "Ingress P", "Ingress"],
     )
     summary.fillna(0, inplace=True)
     summary["Savings"] = summary["Ingress"] - summary["Expenses"]
-    summary["Savings Predict"] = summary["Ingress"] - summary["Expenses P"]
+    summary["Savings Predict"] = summary["Ingress P"] - summary["Expenses"]
     return summary
 
 
@@ -66,14 +66,15 @@ def generate_pred(value):
 
     summary.index = summary.index.astype(str) # to plot it
 
-    fig = px.scatter(
+    fig = px.line(
         summary,
-        labels={"value": "€"}
+        labels={"value": "€"},
+        markers=True
     )
     saving_limit = np.full(len(summary.index), 500, dtype=int)
-    fig.add_trace(go.Scatter(x=summary.index, y=saving_limit, name="500"))
+    fig.add_trace(go.Scatter(x=summary.index, y=saving_limit, name="500", line={"dash": "dash", "color": "orange"}))
     saving_limit = np.full(len(summary.index), 0, dtype=int)
-    fig.add_trace(go.Scatter(x=summary.index, y=saving_limit, name="0"))
+    fig.add_trace(go.Scatter(x=summary.index, y=saving_limit, name="0", line={"dash": "dash", "color": "red"}))
 
     fig_bar = px.bar(
         summary_year,
