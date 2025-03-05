@@ -20,7 +20,7 @@ setup(
     description="A comprehensive tool for analyzing and visualizing financial data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jerosa/settle-up-analyzer",
+    url="https://github.com/jerosa/finanalyzer",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
