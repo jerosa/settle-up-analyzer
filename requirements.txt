@@ -16,11 +16,11 @@ contourpy==1.1.0
     # via matplotlib
 cycler==0.11.0
     # via matplotlib
-dash==2.11.1
+dash==2.14.2
     # via
     #   -r requirements.in
     #   dash-bootstrap-components
-dash-bootstrap-components==1.4.2
+dash-bootstrap-components==1.5.0
     # via -r requirements.in
 dash-core-components==2.0.0
     # via dash
@@ -66,13 +66,13 @@ packaging==23.1
     # via
     #   matplotlib
     #   plotly
-pandas==2.0.3
+pandas==2.1.4
     # via
     #   -r requirements.in
     #   seaborn
 pillow==10.0.0
     # via matplotlib
-plotly==5.15.0
+plotly==5.18.0
     # via dash
 pyparsing==3.0.9
     # via matplotlib
@@ -80,6 +80,7 @@ python-dateutil==2.8.2
     # via
     #   matplotlib
     #   pandas
+python-dotenv==1.0.0
 pytz==2023.3
     # via pandas
 requests==2.31.0

@@ -106,3 +106,18 @@ li.open .fa-chevron-right {
 .nav li {
     font-size: 18px;
 }
+
+/* Additional styles for active navigation items */
+.nav-pills .nav-link.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.nav-pills .nav-link {
+    color: #333;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #e9ecef;
+}
