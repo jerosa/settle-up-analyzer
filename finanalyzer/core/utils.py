@@ -1,4 +1,4 @@
-"""Utility functions for the Settle Up Analyzer."""
+"""Utility functions for the FinAnalyzer."""
 import os
 
 import pandas as pd

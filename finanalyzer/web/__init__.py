@@ -1,1 +1,1 @@
-"""Web application package for Settle Up Analyzer.""" 
+"""Web application package for FinAnalyzer.""" 

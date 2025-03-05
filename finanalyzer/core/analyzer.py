@@ -1,4 +1,4 @@
-"""Data analysis functionality for Settle Up expenses."""
+"""Data analysis functionality for expenses."""
 import os
 from typing import Optional
 from functools import lru_cache
@@ -10,7 +10,7 @@ from .models import AnalyzerData
 
 
 class Analyzer:
-    """Analyzes processed Settle Up expense data."""
+    """Analyzes processed expense data."""
 
     def __init__(self, workdir: str, excel_filename: str) -> None:
         """Initialize the analyzer.

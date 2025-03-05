@@ -19,8 +19,8 @@ dash.register_page(
     __name__,
     path="/table",
     name="Table",
-    title="Settle Up - Expenses Table",
-    description="View and analyze your Settle Up expenses in a table format.",
+    title="FinAnalyzer - Expenses Table",
+    description="View and analyze your FinAnalyzer expenses in a table format.",
 )
 
 

@@ -20,8 +20,8 @@ dash.register_page(
     __name__,
     path="/",
     name="Home",
-    title="Settle Up - Home",
-    description="Summary statistics and visualizations for your Settle Up expenses.",
+    title="FinAnalyzer - Home",
+    description="Summary statistics and visualizations for your FinAnalyzer expenses.",
 )
 
 # Initialize analyzer

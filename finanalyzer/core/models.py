@@ -1,4 +1,4 @@
-"""Data models for the Settle Up Analyzer."""
+"""Data models for the FinAnalyzer."""
 from dataclasses import dataclass
 from pandas import DataFrame
 

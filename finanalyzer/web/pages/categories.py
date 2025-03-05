@@ -30,7 +30,7 @@ dash.register_page(
     __name__,
     path="/categories",
     name="Categories",
-    title="Settle Up - Categories",
+    title="FinAnalyzer - Categories",
     description="Analyze expenses by category across years and months.",
 )
 

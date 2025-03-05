@@ -20,7 +20,7 @@ app = dash.Dash(
 # Sidebar header with navigation
 sidebar_header = dbc.Row(
     [
-        dbc.Col(html.H2("Settle Up", className="display-5")),
+        dbc.Col(html.H2("FinAnalyzer", className="display-5")),
         dbc.Col(
             [
                 html.Button(
@@ -48,7 +48,7 @@ sidebar = html.Div(
             [
                 html.Hr(),
                 html.P(
-                    "Analyze your Settle Up expenses",
+                    "Analyze your expenses",
                     className="lead",
                 ),
             ],

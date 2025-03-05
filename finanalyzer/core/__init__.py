@@ -1,1 +1,1 @@
-"""Core functionality package for Settle Up Analyzer.""" 
+"""Core functionality package for FinAnalyzer.""" 

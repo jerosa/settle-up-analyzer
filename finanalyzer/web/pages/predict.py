@@ -33,7 +33,7 @@ dash.register_page(
     __name__,
     path="/predict",
     name="Predict",
-    title="Settle Up - Income Prediction",
+    title="FinAnalyzer - Income Prediction",
     description="Analyze how changes in income would affect your savings.",
 )
 
