@@ -17,10 +17,12 @@ import plotly.graph_objects as go
 from dash import dcc, html, callback, Input, Output, State
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
-from settle_up.core.analyzer import Analyzer
-from settle_up.core.config import config
-from settle_up.web.utils import (
+from finanalyzer.core.analyzer import Analyzer
+from finanalyzer.core.config import config
+from finanalyzer.web.utils import (
     generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,

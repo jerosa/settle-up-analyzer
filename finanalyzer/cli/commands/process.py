@@ -1,10 +1,10 @@
-"""CLI command for processing Settle Up data."""
+"""CLI command for processing financial data."""
 from pathlib import Path
 from typing import Optional
 
 import click
 
-from settle_up.core.processor import ProcessorConfig, SettleUpProcessor
+from finanalyzer.core.processor import ProcessorConfig, SettleUpProcessor
 
 
 @click.command()
@@ -45,11 +45,11 @@ def process_command(
     output_format: str,
     output_dir: Optional[Path],
 ) -> None:
-    """Process Settle Up transaction data.
+    """Process financial transaction data.
     
     WORKDIR is the directory containing the transaction CSV files.
     """
-    click.echo(f"Processing Settle Up data from {workdir}")
+    click.echo(f"Processing financial data from {workdir}")
     
     config = ProcessorConfig(
         workdir=workdir,

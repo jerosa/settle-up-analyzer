@@ -10,9 +10,9 @@ import pandas as pd
 from dash import Input, Output, State, callback, dcc, dash_table, html
 from pandas import DataFrame
 
-from settle_up.core.analyzer import Analyzer
-from settle_up.core.config import config
-from settle_up.core.utils import safe_read_excel
+from finanalyzer.core.analyzer import Analyzer
+from finanalyzer.core.config import config
+from finanalyzer.core.utils import safe_read_excel
 
 # Register the page
 dash.register_page(

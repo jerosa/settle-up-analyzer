@@ -17,9 +17,9 @@ import plotly.express as px
 from dash import Input, Output, callback, dcc, html
 import pandas as pd
 
-from settle_up.core.analyzer import Analyzer
-from settle_up.core.config import config
-from settle_up.web.utils import (
+from finanalyzer.core.analyzer import Analyzer
+from finanalyzer.core.config import config
+from finanalyzer.web.utils import (
     generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,

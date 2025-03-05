@@ -1,4 +1,4 @@
-"""Configuration management for Settle Up Analyzer."""
+"""Configuration management for financial analysis."""
 import os
 from pathlib import Path
 from typing import Dict, Any
@@ -17,8 +17,9 @@ def load_config() -> Dict[str, Any]:
     
     # Get configuration from environment variables
     config = {
-        "workdir": os.getenv("SETTLE_UP_WORKDIR", str(Path.home() / "data")),
-        "excel_filename": os.getenv("SETTLE_UP_EXCEL", "expenses.xlsx"),
+        "workdir": os.getenv("FINANALYZER_WORKDIR", str(Path.home() / "data")),
+        "user_to_analyze": os.getenv("FINANALYZER_USER", ""),
+        "excel_filename": os.getenv("FINANALYZER_EXCEL", "expenses.xlsx"),
     }
     
     # Create workdir if it doesn't exist

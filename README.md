@@ -1,15 +1,12 @@
-# Settle Up Analyzer
+# Financial Analyzer
 
-A comprehensive tool for analyzing and visualizing Settle Up expense data. This project includes both a command-line interface (CLI) for data processing and a web application for interactive analysis.
+A comprehensive tool for analyzing and visualizing financial data. This project includes both a command-line interface (CLI) for SettleUp export data processing and a web application for interactive analysis.
 
 ## Features
 
 ### CLI Tool
-- Process Settle Up CSV exports
-- Generate expense analysis by user
-- Create visualization plots
+- Process SettleUp transaction data
 - Export processed data in Excel or CSV format
-- Automatic latest file detection
 - Configurable output formats and directories
 
 ### Web Application
@@ -31,8 +28,8 @@ A comprehensive tool for analyzing and visualizing Settle Up expense data. This 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/settle-up-analyzer.git
-cd settle-up-analyzer
+git clone https://github.com/jerosa/finanalyzer.git
+cd finanalyzer
 ```
 
 2. Create and activate a virtual environment:
@@ -103,8 +100,8 @@ python scripts/run_webapp.py
 
 3. Using Flask directly:
 ```bash
-export FLASK_APP=settle_up.web.app
-export FLASK_ENV=development
+export FLASK_APP=finanalyzer.web.app
+export FLASK_DEBUG=1
 flask run
 ```
 
@@ -130,7 +127,7 @@ python scripts/run_cli.py process /path/to/data -u "John"
 
 3. Using Python module directly:
 ```bash
-python -m settle_up.cli.main process /path/to/data -u "John"
+python -m finanalyzer.cli.main process /path/to/data -u "John"
 ```
 
 Common CLI options:
@@ -168,8 +165,8 @@ make test-cov
 
 ### Project Structure
 ```
-settle-up-analyzer/
-├── settle_up/
+finanalyzer/
+├── finanalyzer/
 │   ├── cli/                 # CLI implementation
 │   │   ├── commands/       # CLI command modules
 │   │   └── main.py        # CLI entry point
@@ -189,7 +186,7 @@ settle-up-analyzer/
 
 ### Development Installation
 
-Install development dependencies:
+1. Install development dependencies:
 ```bash
 pip install -r requirements-dev.txt
 ```
@@ -201,7 +198,7 @@ pip install -r requirements-dev.txt
 pytest
 
 # Run with coverage
-pytest --cov=settle_up
+pytest --cov=finanalyzer
 
 # Run specific test file
 pytest tests/test_processor.py
@@ -257,7 +254,7 @@ The application uses environment variables for configuration. You can set these 
 2. Set environment variables directly:
    ```bash
    export FLASK_DEBUG=1
-   export FLASK_APP=settle_up.web.app
+   export FLASK_APP=finanalyzer.web.app
    ```
 
 ### Available Configuration Options
@@ -265,12 +262,12 @@ The application uses environment variables for configuration. You can set these 
 #### Web Application
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `FLASK_APP` | Flask application module | `settle_up.web.app` |
+| `FLASK_APP` | Flask application module | `finanalyzer.web.app` |
 | `FLASK_DEBUG` | Enable debug mode | `1` |
 | `FLASK_RUN_HOST` | Host to bind to | `0.0.0.0` |
 | `FLASK_RUN_PORT` | Port to listen on | `5000` |
-| `DATABASE_URL` | Database connection URL | `sqlite:///settle_up.db` |
-| `SETTLE_UP_WORKDIR` | Default working directory | `./data` |
+| `DATABASE_URL` | Database connection URL | `sqlite:///finanalyzer.db` |
+| `FINANALYZER_WORKDIR` | Default working directory | `./data` |
 
 ### Running the Application
 

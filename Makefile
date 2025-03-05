@@ -38,20 +38,11 @@ activate-venv: venv ## Activate virtual environment (in current shell)
 	@echo "source $(VENV)/bin/activate"
 
 # Installation targets
-install: venv ## Install core package dependencies
-	$(VENV_PIP) install -r requirements.txt
+install: venv ## Install package and dependencies
+	$(VENV_PIP) install -e .
 
 install-dev: venv ## Install development dependencies
-	$(VENV_PIP) install -r requirements-dev.txt
-
-install-cli: venv ## Install CLI dependencies
-	$(VENV_PIP) install -e .[cli]
-
-install-web: venv ## Install web application dependencies
-	$(VENV_PIP) install -e .[web]
-
-install-all: venv ## Install all dependencies
-	$(VENV_PIP) install -e .[all]
+	$(VENV_PIP) install -e ".[dev]"
 
 # Cleaning targets
 clean: ## Clean up Python cache files
@@ -77,29 +68,29 @@ test: venv ## Run tests
 	$(VENV_BIN)/pytest
 
 test-cov: venv ## Run tests with coverage
-	$(VENV_BIN)/pytest --cov=settle_up --cov-report=term-missing
+	$(VENV_BIN)/pytest --cov=finanalyzer --cov-report=term-missing
 
 lint: venv ## Run linting (flake8)
-	$(VENV_BIN)/flake8 settle_up tests
+	$(VENV_BIN)/flake8 finanalyzer tests
 
 typecheck: venv ## Run type checking (mypy)
-	$(VENV_BIN)/mypy settle_up
+	$(VENV_BIN)/mypy finanalyzer
 
 format: venv ## Format code (black)
-	$(VENV_BIN)/black settle_up tests
-	$(VENV_BIN)/isort settle_up tests
+	$(VENV_BIN)/black finanalyzer tests
+	$(VENV_BIN)/isort finanalyzer tests
 
 check: lint typecheck format ## Run all code quality checks
 
 # Application running targets
 run-web: venv ## Run the web application
 	FLASK_DEBUG=$(FLASK_DEBUG) \
-	FLASK_APP=settle_up.web.app \
+	FLASK_APP=finanalyzer.web.app \
 	$(VENV_PYTHON) scripts/run_webapp.py
 
 run-web-flask: venv ## Run the web application using Flask CLI
 	FLASK_DEBUG=$(FLASK_DEBUG) \
-	FLASK_APP=settle_up.web.app \
+	FLASK_APP=finanalyzer.web.app \
 	$(VENV_BIN)/flask run --host=$(FLASK_HOST) --port=$(FLASK_PORT)
 
 run-cli: venv ## Run the CLI (requires additional arguments)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Script to run the Settle Up web application."""
+"""Script to run the web application."""
 import os
 import sys
 from pathlib import Path
@@ -18,7 +18,7 @@ def setup_environment():
     
     # Set default environment variables if not set
     os.environ.setdefault("FLASK_DEBUG", "1")
-    os.environ.setdefault("FLASK_APP", "settle_up.web.app")
+    os.environ.setdefault("FLASK_APP", "finanalyzer.web.app")
     os.environ.setdefault("FLASK_RUN_HOST", "0.0.0.0")
     os.environ.setdefault("FLASK_RUN_PORT", "5000")
 
@@ -27,12 +27,19 @@ def main():
     setup_environment()
     
     try:
-        from settle_up.web.app import app
+        from finanalyzer.web.app import app
         host = os.getenv("FLASK_RUN_HOST", "0.0.0.0")
         port = int(os.getenv("FLASK_RUN_PORT", "5000"))
         debug = os.getenv("FLASK_DEBUG", "1").lower() in ("1", "true", "yes")
         
-        app.run(debug=debug, host=host, port=port)
+        # Use Dash's run_server method instead of Flask's run method
+        app.run(
+            debug=debug,
+            host=host,
+            port=port,
+            dev_tools_hot_reload=True,  # Enable hot reloading
+            dev_tools_ui=True,  # Enable dev tools UI
+        )
     except ImportError as e:
         print("Error: Failed to import web application components.")
         print("Make sure you have installed the required dependencies:")

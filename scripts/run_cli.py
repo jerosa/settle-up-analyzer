@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Script to run the Settle Up CLI."""
+"""Script to run the CLI."""
+import os
 import sys
 from pathlib import Path
 
@@ -14,7 +15,7 @@ def main():
     setup_environment()
     
     try:
-        from settle_up.cli.main import cli
+        from finanalyzer.cli.main import cli
         cli()
     except ImportError as e:
         print("Error: Failed to import CLI components.")
