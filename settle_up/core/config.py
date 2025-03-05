@@ -17,8 +17,7 @@ def load_config() -> Dict[str, Any]:
     
     # Get configuration from environment variables
     config = {
-        "workdir": os.getenv("SETTLE_UP_WORKDIR", str(Path.home() / "settle_up_data")),
-        "user_to_analyze": os.getenv("SETTLE_UP_USER", ""),
+        "workdir": os.getenv("SETTLE_UP_WORKDIR", str(Path.home() / "data")),
         "excel_filename": os.getenv("SETTLE_UP_EXCEL", "expenses.xlsx"),
     }
     
