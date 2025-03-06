@@ -115,37 +115,45 @@ try:
     layout = html.Div([
         dbc.Row([
             dbc.Col([
-                html.H1("Summary"),
-                html.Hr(),
+                html.H1("Summary", className="section-title"),
                 dcc.Graph(
                     figure=fig_yearly_summary,
                     config=FIGURE_CONFIG,
-                    className="shadow-sm",
+                    className="graph-container",
                 ),
-            ]),
-        ]),
+            ], className="content-section"),
+        ], className="mb-4"),
+        
         dbc.Row([
             dbc.Col([
-                html.H2("Monthly Analysis"),
-                html.Hr(),
-                generate_year_dropdown(years, current_year),
+                html.H2("Monthly Analysis", className="section-title"),
+                html.Div([
+                    html.Label("Select Year:", htmlFor="year-filter", className="form-label"),
+                    dcc.Dropdown(
+                        id="year-filter",
+                        options=[{"label": str(year), "value": year} for year in years],
+                        value=current_year,
+                        clearable=False,
+                        style={"width": "200px"},
+                    ),
+                ], className="year-dropdown-container"),
                 dcc.Graph(
                     id="fig_month_summary",
                     config=FIGURE_CONFIG,
-                    className="shadow-sm",
+                    className="graph-container",
                 ),
-            ]),
-        ]),
+            ], className="content-section"),
+        ], className="mb-4"),
+        
         dbc.Row([
             dbc.Col([
-                html.H2("Category Breakdown"),
-                html.Hr(),
+                html.H2("Category Breakdown", className="section-title"),
                 dcc.Graph(
                     id="fig_cat_summary",
                     config=FIGURE_CONFIG,
-                    className="shadow-sm",
+                    className="graph-container",
                 ),
-            ]),
+            ], className="content-section"),
         ]),
     ])
 

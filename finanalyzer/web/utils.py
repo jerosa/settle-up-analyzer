@@ -16,7 +16,7 @@ def generate_year_dropdown(years: List[int], default_year: int) -> html.Div:
     """
     return html.Div(
         [
-            html.Label("Select Year:", htmlFor="year-filter"),
+            html.Label("Select Year:", htmlFor="year-filter", className="form-label"),
             dcc.Dropdown(
                 id="year-filter",
                 options=[{"label": str(year), "value": year} for year in years],
@@ -25,7 +25,7 @@ def generate_year_dropdown(years: List[int], default_year: int) -> html.Div:
                 style={"width": "200px"},
             ),
         ],
-        style={"margin": "10px 0"},
+        className="year-dropdown-container",
     )
 
 
@@ -36,8 +36,19 @@ FIGURE_CONFIG = {
 }
 
 LAYOUT_TEMPLATE = {
-    "margin": dict(l=50, r=30, t=50, b=30),
+    "margin": dict(l=60, r=40, t=60, b=50),
     "paper_bgcolor": "rgba(0,0,0,0)",
     "plot_bgcolor": "rgba(0,0,0,0)",
     "hovermode": "closest",
+    "font": dict(family="Arial, sans-serif", size=12),
+    "title_font": dict(family="Arial, sans-serif", size=16, color="#495057"),
+    "legend_title_font": dict(family="Arial, sans-serif", size=12),
+    "xaxis": dict(
+        gridcolor="rgba(0,0,0,0.05)",
+        zerolinecolor="rgba(0,0,0,0.1)",
+    ),
+    "yaxis": dict(
+        gridcolor="rgba(0,0,0,0.05)",
+        zerolinecolor="rgba(0,0,0,0.1)",
+    ),
 } 

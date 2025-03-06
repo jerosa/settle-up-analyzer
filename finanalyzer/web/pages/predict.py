@@ -262,7 +262,7 @@ try:
                         ),
                     ]),
                 ]),
-            ], className="shadow-sm mb-3"),
+            ], className="info-card"),
             dbc.Card([
                 dbc.CardBody([
                     html.H5("Yearly Impact", className="card-title"),
@@ -277,69 +277,60 @@ try:
                         ),
                     ]),
                 ]),
-            ], className="shadow-sm mb-3"),
+            ], className="info-card"),
         ]
 
     # Define the page layout
     layout = html.Div([
         dbc.Row([
             dbc.Col([
-                html.H1("Income Prediction Analysis"),
-                html.Hr(),
-            ]),
-        ]),
+                html.H1("Income Prediction Analysis", className="section-title mb-0"),
+            ], className="content-section py-3"),
+        ], className="mb-3"),
+        
         dbc.Row([
             dbc.Col([
                 dbc.Card([
                     dbc.CardBody([
-                        html.H4("Adjust Monthly 'Nomina' Income"),
-                        html.P(
-                            "Analyze how changes in your monthly salary would affect your savings.",
-                            className="text-muted",
-                        ),
-                        dbc.Input(
-                            id="input-number",
-                            type="number",
-                            placeholder=f"Current average: €{default_nomina:,.2f}",
-                            value=default_nomina,
-                            step=100,
-                            className="mb-3",
-                        ),
+                        html.Div([
+                            html.H4("Adjust Monthly 'Nomina' Income", className="mb-3"),
+                            html.P(
+                                "Analyze how changes in your monthly salary would affect your savings.",
+                                className="text-muted mb-4",
+                            ),
+                            dbc.Label("Enter new monthly income:", className="form-label"),
+                            dbc.Input(
+                                id="input-number",
+                                type="number",
+                                placeholder=f"Current average: €{default_nomina:,.2f}",
+                                value=default_nomina,
+                                step=100,
+                                className="mb-3",
+                            ),
+                        ], className="controls-section"),
+                        
+                        html.Div([
+                            html.H4("Impact Analysis", className="section-title mb-4"),
+                            dbc.Row([
+                                dbc.Col([
+                                    html.Div(id="impact-summary", className="mt-0"),
+                                ], md=4),
+                                dbc.Col([
+                                    dcc.Graph(
+                                        id="pred-bar",
+                                        config=FIGURE_CONFIG,
+                                    ),
+                                ], md=8),
+                            ]),
+                            
+                            html.H4("Trends Analysis", className="section-title mb-4 mt-4"),
+                            dcc.Graph(
+                                id="pred-line",
+                                config=FIGURE_CONFIG,
+                            ),
+                        ], className="graph-content"),
                     ]),
-                ], className="shadow-sm mb-4"),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardBody([
-                        html.H4("Impact Analysis", className="mb-4"),
-                        dbc.Row([
-                            dbc.Col([
-                                html.Div(id="impact-summary"),
-                            ], md=4),
-                            dbc.Col([
-                                dcc.Graph(
-                                    id="pred-bar",
-                                    config=FIGURE_CONFIG,
-                                ),
-                            ], md=8),
-                        ]),
-                    ]),
-                ], className="shadow-sm mb-4"),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardBody([
-                        html.H4("Trends Analysis", className="mb-4"),
-                        dcc.Graph(
-                            id="pred-line",
-                            config=FIGURE_CONFIG,
-                        ),
-                    ]),
-                ], className="shadow-sm"),
+                ], className="content-section"),
             ]),
         ]),
     ])

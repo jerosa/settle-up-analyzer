@@ -168,10 +168,10 @@ try:
     layout = html.Div([
         dbc.Row([
             dbc.Col([
-                html.H1("Categories Analysis"),
-                html.Hr(),
-            ]),
-        ]),
+                html.H1("Categories Analysis", className="section-title mb-0"),
+            ], className="content-section py-3"),
+        ], className="mb-3"),
+        
         dbc.Row([
             dbc.Col([
                 dbc.Card([
@@ -182,17 +182,24 @@ try:
                                     label="Total",
                                     tab_id="total",
                                     children=[
-                                        dcc.Dropdown(
-                                            id="cat-filter",
-                                            options=[
-                                                {"label": cat, "value": cat} 
-                                                for cat in categories
-                                            ],
-                                            placeholder="Select Categories",
-                                            multi=True,
-                                            value=categories[:12],  # Default to top 12
-                                            className="mb-3",
-                                        ),
+                                        html.Div([
+                                            html.Label(
+                                                "Select Categories to Display:",
+                                                htmlFor="cat-filter",
+                                                className="form-label"
+                                            ),
+                                            dcc.Dropdown(
+                                                id="cat-filter",
+                                                options=[
+                                                    {"label": cat, "value": cat} 
+                                                    for cat in categories
+                                                ],
+                                                placeholder="Select Categories",
+                                                multi=True,
+                                                value=categories[:12],  # Default to top 12
+                                                className="mb-3",
+                                            ),
+                                        ], className="year-dropdown-container"),
                                     ],
                                 ),
                                 dbc.Tab(
@@ -204,18 +211,17 @@ try:
                             id="categories-tabs",
                             active_tab="year",
                             persistence=True,
+                            className="nav-tabs-custom",
                         ),
+                        html.Div([
+                            dcc.Graph(
+                                id="fig-container",
+                                config=FIGURE_CONFIG,
+                                className="mt-3",
+                            ),
+                        ], className="graph-content"),
                     ]),
-                ], className="shadow-sm mb-4"),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dcc.Graph(
-                    id="fig-container",
-                    config=FIGURE_CONFIG,
-                    className="shadow-sm",
-                ),
+                ], className="content-section"),
             ]),
         ]),
     ])
