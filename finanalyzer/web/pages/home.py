@@ -10,6 +10,7 @@ from dash import Input, Output, callback, dcc, html
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
 from finanalyzer.web.utils import (
+    generate_alert_layout,
     generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,
@@ -127,16 +128,7 @@ try:
         dbc.Row([
             dbc.Col([
                 html.H2("Monthly Analysis", className="section-title"),
-                html.Div([
-                    html.Label("Select Year:", htmlFor="year-filter", className="form-label"),
-                    dcc.Dropdown(
-                        id="year-filter",
-                        options=[{"label": str(year), "value": year} for year in years],
-                        value=current_year,
-                        clearable=False,
-                        style={"width": "200px"},
-                    ),
-                ], className="year-dropdown-container"),
+                generate_year_dropdown(years, current_year),
                 dcc.Graph(
                     id="fig_month_summary",
                     config=FIGURE_CONFIG,
@@ -175,16 +167,4 @@ try:
 
 except Exception as e:
     # Fallback layout if data loading fails
-    layout = dbc.Alert(
-        [
-            html.H4("Data Loading Error", className="alert-heading"),
-            html.P(f"Failed to load data: {str(e)}"),
-            html.Hr(),
-            html.P(
-                "Please check your configuration and ensure the data files exist.",
-                className="mb-0"
-            ),
-        ],
-        color="danger",
-        className="m-3",
-    ) 
+    layout = generate_alert_layout(e)

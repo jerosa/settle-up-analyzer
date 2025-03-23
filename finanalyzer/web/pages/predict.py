@@ -7,25 +7,22 @@ would affect monthly and yearly savings. It includes:
 2. A bar plot showing yearly summaries
 """
 
-from datetime import datetime
 from typing import Dict, Tuple, Optional, List
 
 import dash
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import dcc, html, callback, Input, Output, State
+from dash import dcc, html, callback, Input, Output
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
 
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
 from finanalyzer.web.utils import (
-    generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,
+    generate_alert_layout,
 )
 
 # Register the page
@@ -366,16 +363,4 @@ try:
 
 except Exception as e:
     # Fallback layout if data loading fails
-    layout = dbc.Alert(
-        [
-            html.H4("Data Loading Error", className="alert-heading"),
-            html.P(f"Failed to load data: {str(e)}"),
-            html.Hr(),
-            html.P(
-                "Please check your configuration and ensure the data files exist.",
-                className="mb-0"
-            ),
-        ],
-        color="danger",
-        className="m-3",
-    ) 
+    layout = generate_alert_layout(e)

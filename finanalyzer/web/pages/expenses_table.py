@@ -2,7 +2,7 @@
 import base64
 import io
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import dash
 import dash_bootstrap_components as dbc
@@ -12,7 +12,6 @@ from pandas import DataFrame
 
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
-from finanalyzer.core.utils import safe_read_excel
 
 # Register the page
 dash.register_page(
@@ -137,7 +136,7 @@ def parse_uploaded_file(
     """
     try:
         # Parse content
-        content_type, content_string = contents.split(",")
+        _, content_string = contents.split(",")
         decoded = base64.b64decode(content_string)
         
         # Read file based on type

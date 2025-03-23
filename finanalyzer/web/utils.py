@@ -2,6 +2,7 @@
 from typing import List
 
 from dash import dcc, html
+import dash_bootstrap_components as dbc
 
 
 def generate_year_dropdown(years: List[int], default_year: int) -> html.Div:
@@ -27,6 +28,21 @@ def generate_year_dropdown(years: List[int], default_year: int) -> html.Div:
         ],
         className="year-dropdown-container",
     )
+
+def generate_alert_layout(e: Exception):
+    return dbc.Alert(
+        [
+            html.H4("Data Loading Error", className="alert-heading"),
+            html.P(f"Failed to load data: {str(e)}"),
+            html.Hr(),
+            html.P(
+                "Please check your configuration and ensure the data files exist.",
+                className="mb-0"
+            ),
+        ],
+        color="danger",
+        className="m-3",
+    ) 
 
 
 # Common figure settings

@@ -316,3 +316,148 @@
 .graph-content .section-title:first-child {
     margin-top: 0;
 }
+
+/* Quick stats styling */
+.quick-stat {
+    text-align: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.quick-stat:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.stats-label {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.stats-value {
+    color: #495057;
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+/* Filter container styling */
+.filter-container {
+    background-color: #f8f9fa;
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    color: #dee2e6;
+}
+
+.empty-state h4 {
+    margin: 1rem 0;
+    color: #495057;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+/* Graph wrapper styling */
+.graph-wrapper {
+    position: relative;
+    min-height: 400px;
+}
+
+/* Button group styling */
+.btn-group .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.25rem;
+}
+
+.modal-body {
+    padding: 1.25rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.25rem;
+}
+
+/* Form styling in modals */
+.modal .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+/* Alert styling */
+.alert-info {
+    background-color: #e8f4f8;
+    border-color: #d1e7f0;
+    color: #0c5460;
+}
+
+.alert-info .alert-heading {
+    color: #0c5460;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.alert-info i {
+    color: #17a2b8;
+}
+
+/* Loading spinner styling */
+.spinner-border {
+    color: #007bff;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.15em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quick-stat {
+        margin-bottom: 1rem;
+    }
+
+    .filter-container {
+        padding: 1rem;
+    }
+
+    .btn-group {
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+}
