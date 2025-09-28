@@ -121,6 +121,7 @@ try:
                     figure=fig_yearly_summary,
                     config=FIGURE_CONFIG,
                     className="graph-container",
+                    style={"height":"auto"}
                 ),
             ], className="content-section"),
         ], className="mb-4"),
@@ -133,6 +134,7 @@ try:
                     id="fig_month_summary",
                     config=FIGURE_CONFIG,
                     className="graph-container",
+                    style={"height":"auto"}
                 ),
             ], className="content-section"),
         ], className="mb-4"),
@@ -144,6 +146,7 @@ try:
                     id="fig_cat_summary",
                     config=FIGURE_CONFIG,
                     className="graph-container",
+                    style={"height":"auto"}
                 ),
             ], className="content-section"),
         ]),

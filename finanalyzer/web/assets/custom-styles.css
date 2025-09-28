@@ -6,8 +6,8 @@
     padding: 1.5rem;
     border-radius: 8px;
     background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 120ms ease-out, background-color 120ms ease-out;
 }
 
 /* Reduced padding for title sections */
@@ -17,7 +17,7 @@
 }
 
 .content-section:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .section-title {
@@ -40,28 +40,15 @@
     padding: 1rem;
     border-radius: 8px;
     background-color: #ffffff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
 }
 
-.graph-container:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-}
 
 /* Card styling improvements */
 .info-card {
     margin-bottom: 1.5rem;
-    transition: all 0.3s ease;
     border: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.info-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
 .card-header {
     font-weight: 500;
@@ -88,7 +75,6 @@
     background-color: #ffffff;
     padding: 1rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .year-dropdown-container:last-child {
@@ -106,7 +92,7 @@
     padding: 0.5rem 0.75rem;
     border-radius: 4px;
     border: 1px solid #dee2e6;
-    transition: all 0.2s ease;
+    transition: border-color 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out;
 }
 
 .form-control:focus {
@@ -164,7 +150,7 @@
 .Select-control {
     border-color: #dee2e6;
     border-radius: 4px;
-    transition: all 0.2s ease;
+    transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
 }
 
 .Select-control:hover {
@@ -197,11 +183,6 @@
     }
 }
 
-.content-section,
-.graph-container,
-.info-card {
-    animation: fadeIn 0.3s ease-out;
-}
 
 /* Tab styling */
 .nav-tabs-custom {
@@ -216,7 +197,7 @@
     padding: 0.75rem 1rem;
     margin-right: 1rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: color 120ms ease-out, border-bottom-color 120ms ease-out;
 }
 
 .nav-tabs-custom .nav-link:hover {
@@ -233,18 +214,18 @@
 /* Upload styling */
 .upload-container {
     display: inline-block;
-    transition: all 0.2s ease;
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out;
 }
 
 .upload-button {
     font-weight: 500;
     padding: 0.5rem 1rem;
-    transition: all 0.2s ease;
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out, color 120ms ease-out;
 }
 
 .upload-button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 2px 3px rgba(0, 123, 255, 0.16);
 }
 
 .upload-text {
@@ -323,12 +304,12 @@
     padding: 1rem;
     background-color: #f8f9fa;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: background-color 120ms ease-out, transform 120ms ease-out;
 }
 
 .quick-stat:hover {
-    background-color: #e9ecef;
-    transform: translateY(-2px);
+    background-color: #f1f3f5;
+    transform: translateY(-1px);
 }
 
 .stats-label {
