@@ -16,7 +16,7 @@ def main():
     load_dotenv(env_path)
     
     # Run the app
-    app.run_server(debug=True)
+    app.run(debug=True)
 
 if __name__ == "__main__":
     main() 
