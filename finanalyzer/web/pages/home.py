@@ -10,6 +10,7 @@ from dash import Input, Output, callback, dcc, html
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
 from finanalyzer.web.utils import (
+    generate_alert_layout,
     generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,
@@ -115,37 +116,39 @@ try:
     layout = html.Div([
         dbc.Row([
             dbc.Col([
-                html.H1("Summary"),
-                html.Hr(),
+                html.H1("Summary", className="section-title"),
                 dcc.Graph(
                     figure=fig_yearly_summary,
                     config=FIGURE_CONFIG,
-                    className="shadow-sm",
+                    className="graph-container",
+                    style={"height":"auto"}
                 ),
-            ]),
-        ]),
+            ], className="content-section"),
+        ], className="mb-4"),
+        
         dbc.Row([
             dbc.Col([
-                html.H2("Monthly Analysis"),
-                html.Hr(),
+                html.H2("Monthly Analysis", className="section-title"),
                 generate_year_dropdown(years, current_year),
                 dcc.Graph(
                     id="fig_month_summary",
                     config=FIGURE_CONFIG,
-                    className="shadow-sm",
+                    className="graph-container",
+                    style={"height":"auto"}
                 ),
-            ]),
-        ]),
+            ], className="content-section"),
+        ], className="mb-4"),
+        
         dbc.Row([
             dbc.Col([
-                html.H2("Category Breakdown"),
-                html.Hr(),
+                html.H2("Category Breakdown", className="section-title"),
                 dcc.Graph(
                     id="fig_cat_summary",
                     config=FIGURE_CONFIG,
-                    className="shadow-sm",
+                    className="graph-container",
+                    style={"height":"auto"}
                 ),
-            ]),
+            ], className="content-section"),
         ]),
     ])
 
@@ -167,16 +170,4 @@ try:
 
 except Exception as e:
     # Fallback layout if data loading fails
-    layout = dbc.Alert(
-        [
-            html.H4("Data Loading Error", className="alert-heading"),
-            html.P(f"Failed to load data: {str(e)}"),
-            html.Hr(),
-            html.P(
-                "Please check your configuration and ensure the data files exist.",
-                className="mb-0"
-            ),
-        ],
-        color="danger",
-        className="m-3",
-    ) 
+    layout = generate_alert_layout(e)

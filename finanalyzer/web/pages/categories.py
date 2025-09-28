@@ -14,15 +14,15 @@ from typing import Dict, List, Tuple
 import dash
 import dash_bootstrap_components as dbc
 import plotly.express as px
-from dash import Input, Output, callback, dcc, html
+from dash import Input, Output, callback, dcc, html, State
 import pandas as pd
 
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
 from finanalyzer.web.utils import (
-    generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,
+    generate_alert_layout,
 )
 
 # Register the page
@@ -39,53 +39,47 @@ analyzer = Analyzer(config["workdir"], config["excel_filename"])
 
 try:
     # Pre-aggregate data for better performance
-    df_by_category_year = analyzer.data.df.pivot_table(
-        index="Category",
-        columns="Year",
-        values="Amount",
-        aggfunc="sum",
-        fill_value=0
+    df_by_category_year = analyzer.data.df_expenses.pivot_table(
+        index="Category", columns="Year", values="Amount", aggfunc="sum", fill_value=0
     ).round(2)
 
     # Pre-aggregate monthly data by year
     df_by_category_month = {
-        year: analyzer.data.df[analyzer.data.df.Year == year].pivot_table(
+        year: analyzer.data.df_expenses[analyzer.data.df_expenses.Year == year]
+        .pivot_table(
             index="Category",
             columns="Month",
             values="Amount",
             aggfunc="sum",
-            fill_value=0
-        ).round(2)
-        for year in analyzer.data.df.Year.unique()
+            fill_value=0,
+        )
+        .round(2)
+        for year in analyzer.data.df_expenses.Year.unique()
     }
 
     def get_categories(df: pd.DataFrame) -> List[str]:
         """Get sorted list of categories by total amount.
-        
+
         Args:
             df: DataFrame with categories as index and amounts in columns
-            
+
         Returns:
             List of categories sorted by total amount
         """
-        return (
-            df.sum(axis=1)
-            .sort_values(ascending=False)
-            .index.tolist()
-        )
+        return df.sum(axis=1).sort_values(ascending=False).index.tolist()
 
     def create_base_figure(data: pd.DataFrame, **plot_kwargs) -> dict:
         """Create a standardized bar plot with consistent styling.
-        
+
         Args:
             data: DataFrame to plot
             **plot_kwargs: Additional arguments for px.bar
-            
+
         Returns:
             Styled Plotly figure object
         """
         fig = px.bar(data, height=800, template="plotly_white", **plot_kwargs)
-        
+
         # Apply consistent styling
         fig.for_each_yaxis(lambda y: y.update(title=""))
         fig.add_annotation(
@@ -103,22 +97,20 @@ try:
     @lru_cache(maxsize=32)
     def create_total_figure(categories_tuple: Tuple[str, ...]) -> dict:
         """Create figure showing expenses by category across years.
-        
+
         Args:
             categories_tuple: Tuple of category names to include in visualization
-            
+
         Returns:
             Plotly figure object showing the expenses breakdown
         """
         categories = list(categories_tuple)
         df_selected = df_by_category_year.loc[categories]
-        
+
         df_plot = df_selected.reset_index().melt(
-            id_vars=["Category"],
-            var_name="Year",
-            value_name="Amount"
+            id_vars=["Category"], var_name="Year", value_name="Amount"
         )
-        
+
         return create_base_figure(
             df_plot,
             x="Year",
@@ -126,27 +118,25 @@ try:
             color="Year",
             facet_col="Category",
             facet_col_wrap=4,
-            category_orders={"Category": categories}
+            category_orders={"Category": categories},
         )
 
     @lru_cache(maxsize=32)
     def create_year_figure(year: int) -> dict:
         """Create figure showing monthly expenses by category for a specific year.
-        
+
         Args:
             year: The year to visualize
-            
+
         Returns:
             Plotly figure object showing the monthly breakdown
         """
         df_selected = df_by_category_month[year]
-        
+
         df_plot = df_selected.reset_index().melt(
-            id_vars=["Category"],
-            var_name="Month",
-            value_name="Amount"
+            id_vars=["Category"], var_name="Month", value_name="Amount"
         )
-        
+
         return create_base_figure(
             df_plot,
             x="Category",
@@ -154,107 +144,485 @@ try:
             facet_col="Month",
             facet_col_wrap=3,
             color="Category",
-            category_orders={"Category": get_categories(df_by_category_year)}
+            category_orders={"Category": get_categories(df_by_category_year)},
         )
 
     # Initialize categories and years
     categories = get_categories(df_by_category_year)
-    years = sorted(analyzer.data.df.Year.unique().tolist())
+    years = sorted(analyzer.data.df_expenses.Year.unique().tolist())
     current_year = datetime.now().year
     if current_year not in years:
         current_year = max(years)
 
     # Define the page layout
-    layout = html.Div([
-        dbc.Row([
-            dbc.Col([
-                html.H1("Categories Analysis"),
-                html.Hr(),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardBody([
-                        dbc.Tabs(
-                            [
-                                dbc.Tab(
-                                    label="Total",
-                                    tab_id="total",
-                                    children=[
-                                        dcc.Dropdown(
-                                            id="cat-filter",
-                                            options=[
-                                                {"label": cat, "value": cat} 
-                                                for cat in categories
-                                            ],
-                                            placeholder="Select Categories",
-                                            multi=True,
-                                            value=categories[:12],  # Default to top 12
-                                            className="mb-3",
-                                        ),
-                                    ],
-                                ),
-                                dbc.Tab(
-                                    label="By Year",
-                                    tab_id="year",
-                                    children=generate_year_dropdown(years, current_year),
-                                ),
-                            ],
-                            id="categories-tabs",
-                            active_tab="year",
-                            persistence=True,
-                        ),
-                    ]),
-                ], className="shadow-sm mb-4"),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dcc.Graph(
-                    id="fig-container",
-                    config=FIGURE_CONFIG,
-                    className="shadow-sm",
-                ),
-            ]),
-        ]),
-    ])
+    layout = html.Div(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            html.H1(
+                                "Categories Analysis", className="section-title mb-0"
+                            ),
+                            html.P(
+                                "Analyze your expenses by category across different time periods",
+                                className="text-muted",
+                            ),
+                        ],
+                        className="content-section py-3",
+                    ),
+                ],
+                className="mb-3",
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dbc.Card(
+                                [
+                                    dbc.CardBody(
+                                        [
+                                            # Quick stats summary
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                [
+                                                                    html.H6(
+                                                                        "Top Category",
+                                                                        className="stats-label",
+                                                                    ),
+                                                                    html.H4(
+                                                                        (
+                                                                            categories[
+                                                                                0
+                                                                            ]
+                                                                            if categories
+                                                                            else "No data"
+                                                                        ),
+                                                                        className="stats-value",
+                                                                    ),
+                                                                ],
+                                                                className="quick-stat",
+                                                            ),
+                                                        ],
+                                                        md=4,
+                                                    ),
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                [
+                                                                    html.H6(
+                                                                        "Total Categories",
+                                                                        className="stats-label",
+                                                                    ),
+                                                                    html.H4(
+                                                                        str(
+                                                                            len(
+                                                                                categories
+                                                                            )
+                                                                        ),
+                                                                        className="stats-value",
+                                                                    ),
+                                                                ],
+                                                                className="quick-stat",
+                                                            ),
+                                                        ],
+                                                        md=4,
+                                                    ),
+                                                    dbc.Col(
+                                                        [
+                                                            html.Div(
+                                                                [
+                                                                    html.H6(
+                                                                        "Time Range",
+                                                                        className="stats-label",
+                                                                    ),
+                                                                    html.H4(
+                                                                        (
+                                                                            f"{min(years)} - {max(years)}"
+                                                                            if years
+                                                                            else "No data"
+                                                                        ),
+                                                                        className="stats-value",
+                                                                    ),
+                                                                ],
+                                                                className="quick-stat",
+                                                            ),
+                                                        ],
+                                                        md=4,
+                                                    ),
+                                                ],
+                                                className="mb-4",
+                                            ),
+                                            dbc.Tabs(
+                                                [
+                                                    dbc.Tab(
+                                                        label="Total View",
+                                                        tab_id="total",
+                                                        children=[
+                                                            html.Div(
+                                                                [
+                                                                    html.Div(
+                                                                        [
+                                                                            html.Label(
+                                                                                "Select Categories to Display:",
+                                                                                htmlFor="cat-filter",
+                                                                                className="form-label",
+                                                                            ),
+                                                                            html.Small(
+                                                                                "Choose categories to analyze their expenses over time",
+                                                                                className="text-muted d-block mb-2",
+                                                                            ),
+                                                                            dcc.Dropdown(
+                                                                                id="cat-filter",
+                                                                                options=[
+                                                                                    {
+                                                                                        "label": cat,
+                                                                                        "value": cat,
+                                                                                    }
+                                                                                    for cat in categories
+                                                                                ],
+                                                                                placeholder="Select Categories",
+                                                                                multi=True,
+                                                                                value=categories[
+                                                                                    :12
+                                                                                ],  # Default to top 12
+                                                                                className="mb-2",
+                                                                            ),
+                                                                            dbc.Button(
+                                                                                [
+                                                                                    html.I(
+                                                                                        className="fas fa-sync-alt me-2"
+                                                                                    ),
+                                                                                    "Reset Selection",
+                                                                                ],
+                                                                                id="reset-categories",
+                                                                                color="secondary",
+                                                                                size="sm",
+                                                                                className="mt-2",
+                                                                            ),
+                                                                        ],
+                                                                        className="filter-container",
+                                                                    ),
+                                                                ],
+                                                                className="controls-section",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    dbc.Tab(
+                                                        label="Yearly Analysis",
+                                                        tab_id="year",
+                                                        children=[
+                                                            html.Div(
+                                                                [
+                                                                    html.Div(
+                                                                        [
+                                                                            html.Label(
+                                                                                "Select Year:",
+                                                                                htmlFor="year-filter",
+                                                                                className="form-label",
+                                                                            ),
+                                                                            html.Small(
+                                                                                "View monthly category breakdown for a specific year",
+                                                                                className="text-muted d-block mb-2",
+                                                                            ),
+                                                                            dcc.Dropdown(
+                                                                                id="year-filter",
+                                                                                options=[
+                                                                                    {
+                                                                                        "label": str(
+                                                                                            year
+                                                                                        ),
+                                                                                        "value": year,
+                                                                                    }
+                                                                                    for year in years
+                                                                                ],
+                                                                                value=current_year,
+                                                                                clearable=False,
+                                                                                className="mb-2",
+                                                                            ),
+                                                                        ],
+                                                                        className="filter-container",
+                                                                    ),
+                                                                ],
+                                                                className="controls-section",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                                id="categories-tabs",
+                                                active_tab="year",
+                                                persistence=True,
+                                                className="nav-tabs-custom",
+                                            ),
+                                            # Loading wrapper for graph content
+                                            dbc.Spinner(
+                                                html.Div(
+                                                    [
+                                                        # Graph toolbar
+                                                        dbc.Row(
+                                                            [
+                                                                dbc.Col(
+                                                                    [
+                                                                        dbc.ButtonGroup(
+                                                                            [
+                                                                                dbc.Button(
+                                                                                    [
+                                                                                        html.I(
+                                                                                            className="fas fa-download me-2"
+                                                                                        ),
+                                                                                        "Export",
+                                                                                    ],
+                                                                                    id="export-graph",
+                                                                                    color="primary",
+                                                                                    outline=True,
+                                                                                    size="sm",
+                                                                                ),
+                                                                                dbc.Button(
+                                                                                    [
+                                                                                        html.I(
+                                                                                            className="fas fa-expand-arrows-alt me-2"
+                                                                                        ),
+                                                                                        "Fullscreen",
+                                                                                    ],
+                                                                                    id="fullscreen-graph",
+                                                                                    color="primary",
+                                                                                    outline=True,
+                                                                                    size="sm",
+                                                                                ),
+                                                                            ],
+                                                                            className="mb-3",
+                                                                        ),
+                                                                    ]
+                                                                ),
+                                                            ]
+                                                        ),
+                                                        # Graph with empty state
+                                                        html.Div(
+                                                            [
+                                                                dcc.Graph(
+                                                                    id="fig-container",
+                                                                    config=FIGURE_CONFIG,
+                                                                    className="mt-0",
+                                                                ),
+                                                                # Empty state message
+                                                                html.Div(
+                                                                    [
+                                                                        html.I(
+                                                                            className="fas fa-chart-bar fa-3x mb-3"
+                                                                        ),
+                                                                        html.H4(
+                                                                            "No Data to Display"
+                                                                        ),
+                                                                        html.P(
+                                                                            "Select categories or change filters to view the analysis"
+                                                                        ),
+                                                                    ],
+                                                                    id="empty-state",
+                                                                    className="empty-state d-none",
+                                                                ),
+                                                            ],
+                                                            className="graph-wrapper",
+                                                        ),
+                                                        # Graph legend/help
+                                                        dbc.Alert(
+                                                            [
+                                                                html.H6(
+                                                                    "Understanding the Visualization",
+                                                                    className="alert-heading",
+                                                                ),
+                                                                html.P(
+                                                                    [
+                                                                        html.I(
+                                                                            className="fas fa-info-circle me-2"
+                                                                        ),
+                                                                        "The graph shows expense patterns across categories. ",
+                                                                        "Use the filters above to customize the view.",
+                                                                    ],
+                                                                    className="mb-0",
+                                                                ),
+                                                            ],
+                                                            color="info",
+                                                            className="mt-3",
+                                                        ),
+                                                    ],
+                                                    className="graph-content",
+                                                ),
+                                                color="primary",
+                                                type="border",
+                                                delay_show=100,
+                                            ),
+                                        ]
+                                    ),
+                                ],
+                                className="content-section",
+                            ),
+                        ]
+                    ),
+                ]
+            ),
+            # Fullscreen modal
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Category Analysis"),
+                    dbc.ModalBody(
+                        [
+                            dcc.Graph(
+                                id="fullscreen-graph-content",
+                                config=FIGURE_CONFIG,
+                            ),
+                        ]
+                    ),
+                ],
+                id="fullscreen-modal",
+                size="xl",
+                is_open=False,
+            ),
+            # Export modal
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Export Options"),
+                    dbc.ModalBody(
+                        [
+                            dbc.Form(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    dbc.Label(
+                                                        "Format", className="mb-2"
+                                                    ),
+                                                    dbc.Select(
+                                                        id="export-format",
+                                                        options=[
+                                                            {
+                                                                "label": "PNG Image",
+                                                                "value": "png",
+                                                            },
+                                                            {
+                                                                "label": "SVG Vector",
+                                                                "value": "svg",
+                                                            },
+                                                            {
+                                                                "label": "CSV Data",
+                                                                "value": "csv",
+                                                            },
+                                                        ],
+                                                        value="png",
+                                                    ),
+                                                ],
+                                                className="mb-3",
+                                            ),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        ]
+                    ),
+                    dbc.ModalFooter(
+                        [
+                            dbc.Button("Cancel", id="cancel-export", color="secondary"),
+                            dbc.Button("Export", id="confirm-export", color="primary"),
+                        ]
+                    ),
+                ],
+                id="export-modal",
+                is_open=False,
+            ),
+        ]
+    )
 
     @callback(
-        Output("fig-container", "figure"),
+        [
+            Output("fig-container", "figure"),
+            Output("empty-state", "className"),
+        ],
         [
             Input("categories-tabs", "active_tab"),
             Input("cat-filter", "value"),
             Input("year-filter", "value"),
+            Input("reset-categories", "n_clicks"),
         ],
     )
-    def update_figure(active_tab: str, categories: List[str], year: int) -> dict:
+    def update_figure(
+        active_tab: str, categories: List[str], year: int, _: int
+    ) -> Tuple[dict, str]:
         """Update the figure based on user selections.
-        
+
         Args:
             active_tab: Currently active tab ('total' or 'year')
             categories: List of selected categories
             year: Selected year for year view
-            
+            _: Number of clicks on reset button (unused)
+
         Returns:
-            Updated Plotly figure
+            Updated Plotly figure and empty state class
         """
+        # Show empty state if no data selected
+        if active_tab == "total" and not categories:
+            return {}, "empty-state"
+
         if active_tab == "total":
-            return create_total_figure(tuple(sorted(categories)))
-        return create_year_figure(year)
+            fig = create_total_figure(tuple(sorted(categories)))
+        else:
+            fig = create_year_figure(year)
+
+        return fig, "empty-state d-none"
+
+    @callback(
+        Output("fullscreen-modal", "is_open"),
+        [
+            Input("fullscreen-graph", "n_clicks"),
+            Input("fullscreen-modal", "is_open"),
+        ],
+    )
+    def toggle_fullscreen(n_clicks: int, is_open: bool) -> bool:
+        """Toggle fullscreen modal state."""
+        if n_clicks:
+            return not is_open
+        return is_open
+
+    @callback(
+        Output("fullscreen-graph-content", "figure"),
+        Input("fig-container", "figure"),
+    )
+    def update_fullscreen_graph(figure: dict) -> dict:
+        """Update fullscreen graph with current figure."""
+        return figure
+
+    @callback(
+        Output("export-modal", "is_open"),
+        [
+            Input("export-graph", "n_clicks"),
+            Input("cancel-export", "n_clicks"),
+            Input("confirm-export", "n_clicks"),
+        ],
+        State("export-modal", "is_open"),
+    )
+    def toggle_export_modal(
+        export_clicks: int, cancel_clicks: int, confirm_clicks: int, is_open: bool
+    ) -> bool:
+        """Toggle export modal state."""
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return is_open
+        button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if button_id == "export-graph":
+            return True
+        return False
+
+    @callback(
+        Output("cat-filter", "value"),
+        Input("reset-categories", "n_clicks"),
+        State("cat-filter", "options"),
+    )
+    def reset_categories(_: int, options: List[dict]) -> List[str]:
+        """Reset category selection to top 12."""
+        return [opt["value"] for opt in options[:12]]
 
 except Exception as e:
     # Fallback layout if data loading fails
-    layout = dbc.Alert(
-        [
-            html.H4("Data Loading Error", className="alert-heading"),
-            html.P(f"Failed to load data: {str(e)}"),
-            html.Hr(),
-            html.P(
-                "Please check your configuration and ensure the data files exist.",
-                className="mb-0"
-            ),
-        ],
-        color="danger",
-        className="m-3",
-    ) 
+    layout = generate_alert_layout(e)

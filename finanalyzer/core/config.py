@@ -20,6 +20,10 @@ def load_config() -> Dict[str, Any]:
         "workdir": os.getenv("FINANALYZER_WORKDIR", str(Path.home() / "data")),
         "user_to_analyze": os.getenv("FINANALYZER_USER", ""),
         "excel_filename": os.getenv("FINANALYZER_EXCEL", "expenses.xlsx"),
+        "housing_category": os.getenv("FINANALYZER_HOUSING_CATEGORY", "Alquiler"),
+        "payroll_category": os.getenv("FINANALYZER_PAYROLL_CATEGORY", "Nomina"),
+        "extra_category": os.getenv("FINANALYZER_EXTRA_CATEGORY", "Extra"),
+        "bonus_category": os.getenv("FINANALYZER_BONUS_CATEGORY", "Bonus"),
     }
     
     # Create workdir if it doesn't exist

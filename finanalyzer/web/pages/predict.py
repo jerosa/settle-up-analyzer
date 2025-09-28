@@ -1,390 +1,411 @@
 """
-Prediction page for analyzing the impact of income changes.
+Predict: Analyze impact of payroll income changes.
 
-This module provides interactive visualizations to explore how changes in 'Nomina' income
-would affect monthly and yearly savings. It includes:
-1. A line plot showing monthly trends with target thresholds
-2. A bar plot showing yearly summaries
+Simplified rewrite for clear impact analysis: period selector (Monthly/Annual),
+target amount input and monthly trend/annual comparison visualizations.
 """
 
-from datetime import datetime
 from typing import Dict, Tuple, Optional, List
 
 import dash
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import dcc, html, callback, Input, Output, State
+from dash import dcc, html, callback, Input, Output
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
 
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
 from finanalyzer.web.utils import (
-    generate_year_dropdown,
     FIGURE_CONFIG,
     LAYOUT_TEMPLATE,
+    generate_alert_layout,
 )
 
-# Register the page
+# Page registration
 dash.register_page(
     __name__,
     path="/predict",
     name="Predict",
-    title="FinAnalyzer - Income Prediction",
-    description="Analyze how changes in income would affect your savings.",
+    title="FinAnalyzer - Income Impact",
+    description="Analyze the impact of changing your payroll income on savings.",
 )
 
-# Color scheme
 COLORS = {
-    "Ingress": "#2ecc71",
+    "Income": "#2ecc71",
+    "Expenses": "#e67e22",
     "Savings": "#3498db",
-    "Savings Predicted": "#e74c3c",
+    "Savings (simulated)": "#e74c3c",
     "Target": "#f39c12",
-    "Break Even": "#c0392b"
+    "Break-even": "#7f8c8d",
 }
 
+HOUSING_CATEGORY = config["housing_category"]
+PAYROLL_CATEGORY = config["payroll_category"]
+EXTRA_CATEGORY = config["extra_category"]
+BONUS_CATEGORY = config["bonus_category"]
+
 try:
-    # Initialize analyzer
     analyzer = Analyzer(config["workdir"], config["excel_filename"])
-    df_ingress = analyzer.data.df_ingress
+    df_income = analyzer.data.df_ingress
     df_expenses = analyzer.data.df_expenses
 
-    # Pre-aggregate monthly data
-    expenses_per = df_expenses.index.to_period("M")
-    expenses_monthly = df_expenses.groupby(expenses_per)["Amount"].sum()
+    # Monthly series
+    expenses_monthly = df_expenses.groupby(df_expenses.index.to_period("M"))["Amount"].sum()
+    income_monthly = df_income.groupby(df_income.index.to_period("M"))["Amount"].sum()
 
-    ingress_per = df_ingress.index.to_period("M")
-    ingress_monthly = df_ingress.groupby(ingress_per)["Amount"].sum()
+    # Get current housing expenses
+    housing_expenses = df_expenses[df_expenses.Category == HOUSING_CATEGORY]
+    housing_monthly = housing_expenses.groupby(housing_expenses.index.to_period("M"))["Amount"].sum()
 
-    # Pre-calculate base monthly Nomina amount
-    nomina_data = df_ingress[df_ingress.Category == "Nomina"]
-    nomina_monthly = nomina_data.groupby(nomina_data.index.to_period("M"))["Amount"].sum()
-    # Use last 12 months for default Nomina calculation
-    default_nomina = int(round(nomina_monthly.iloc[-12:].mean(), -2))  # Rounds to nearest 100
+    # Create annual data structure
+    def create_annual_summary() -> pd.DataFrame:
+        """Create annual summary DataFrame with calendar years."""
+        # Get all years from the data
+        all_years = sorted(set(df_income.index.year) | set(df_expenses.index.year))
+        
+        annual_data = []
+        current_year = pd.Timestamp.now().year
+        
+        for year in all_years:
+            # Income by category for this year
+            year_income = df_income[df_income.index.year == year]
+            year_expenses = df_expenses[df_expenses.index.year == year]
+            
+            regular = year_income[year_income.Category == PAYROLL_CATEGORY]["Amount"].sum()
+            extra = year_income[year_income.Category == EXTRA_CATEGORY]["Amount"].sum()
+            bonus = year_income[year_income.Category == BONUS_CATEGORY]["Amount"].sum()
+            total_income = regular + extra + bonus
+            
+            housing = year_expenses[year_expenses.Category == HOUSING_CATEGORY]["Amount"].sum()
+            
+            total_expenses = year_expenses["Amount"].sum()
+            savings = total_income - total_expenses
+            
+            # Determine if year is complete
+            is_complete = year < current_year
+            status = "Complete" if is_complete else "Incomplete"
+            
+            annual_data.append({
+                "Year": year,
+                "Regular": regular,
+                "Extra": extra,
+                "Bonus": bonus,
+                "Total_Income": total_income,
+                "Housing": housing,
+                "Expenses": total_expenses,
+                "Savings": savings,
+                "Status": status,
+                "Is_Complete": is_complete
+            })
+        
+        return pd.DataFrame(annual_data).set_index("Year")
+    
+    # Create annual summary
+    annual_summary = create_annual_summary()
+    
+    # Get most recent complete year as default
+    complete_years = annual_summary[annual_summary["Is_Complete"]]
+    default_year = complete_years.index.max() if len(complete_years) > 0 else annual_summary.index.max()
 
-    def calculate_predictions(new_nomina_value: Optional[float]) -> pd.DataFrame:
-        """Calculate predicted savings with new Nomina value.
-        
-        Args:
-            new_nomina_value: New monthly Nomina amount
-            
-        Returns:
-            DataFrame with original and predicted monthly savings
-        """
-        if not new_nomina_value:
-            new_nomina_value = default_nomina
-            
-        # Calculate predicted ingress by adjusting Nomina
-        adjustment = new_nomina_value - nomina_monthly.mean()
-        ingress_predicted = ingress_monthly.copy()
-        
-        # Adjust each month's ingress by the difference in Nomina
-        for month in nomina_monthly.index:
-            if month in ingress_predicted.index:
-                ingress_predicted[month] += adjustment
-        
-        # Combine all series into a DataFrame with consistent index
-        all_months = sorted(set(expenses_monthly.index) | set(ingress_monthly.index))
-        summary = pd.DataFrame(index=all_months)
-        
-        summary["Expenses"] = expenses_monthly
-        summary["Ingress"] = ingress_monthly
-        summary["Ingress Predicted"] = ingress_predicted
-        
-        # Fill any missing values with 0
-        summary.fillna(0, inplace=True)
-        
-        summary["Savings"] = summary["Ingress"] - summary["Expenses"]
-        summary["Savings Predicted"] = summary["Ingress Predicted"] - summary["Expenses"]
-        
-        return summary
+    # TODO: predict incomplete year using total income / 12
 
-    def create_prediction_figures(summary: pd.DataFrame) -> Tuple[dict, dict]:
-        """Create line and bar figures for predictions.
+    def build_annual_analysis(selected_year: int, annual_income_target: float, housing_amount: Optional[float] = None) -> Tuple[pd.DataFrame, Dict]:
+        """Build annual analysis based on selected year and target income."""
+        # Calculate baseline housing for the selected year
+        year_housing = housing_monthly[housing_monthly.index.year == selected_year]
+        baseline_housing = int(round(year_housing.mean())) if len(year_housing) > 0 else 0
         
-        Args:
-            summary: DataFrame with original and predicted values
-            
-        Returns:
-            Tuple of (line_figure, bar_figure) showing predictions
-        """
-        # Prepare data for plotting
-        plot_data = summary[["Ingress", "Savings", "Savings Predicted"]]
-        yearly_summary = plot_data.groupby(plot_data.index.year).sum()
-        
-        # Convert Period index to string for plotting
-        plot_data.index = plot_data.index.astype(str)
-        
-        # Create line plot
-        line_fig = px.line(
-            plot_data,
-            labels={"value": "€", "index": "Month"},
-            markers=True,
-            title="Monthly Savings Trends",
-            color_discrete_map=COLORS,
-            template="plotly_white",
-            height=400  # Reduced height for better grouping
-        )
-        
-        # Add threshold lines
-        months = plot_data.index
-        line_fig.add_trace(
-            go.Scatter(
-                x=months,
-                y=np.full(len(months), 500),
-                name="Target Savings",
-                line={"dash": "dash", "color": COLORS["Target"]},
-                hovertemplate="Target: €500"
-            )
-        )
-        line_fig.add_trace(
-            go.Scatter(
-                x=months,
-                y=np.zeros(len(months)),
-                name="Break Even",
-                line={"dash": "dash", "color": COLORS["Break Even"]},
-                hovertemplate="Break Even: €0"
-            )
-        )
-        
-        # Apply styling
-        line_fig.update_layout(
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.15,
-                xanchor="center",
-                x=0.5,
-                bgcolor="rgba(255, 255, 255, 0.8)",
-                bordercolor="rgba(0, 0, 0, 0.2)",
-                borderwidth=1
-            ),
-            **LAYOUT_TEMPLATE
-        )
-        
-        # Create bar plot
-        bar_fig = px.bar(
-            yearly_summary,
-            barmode="group",
-            labels={"value": "€", "index": "Year"},
-            title="Yearly Summary Comparison",
-            color_discrete_map=COLORS,
-            template="plotly_white",
-            height=300  # Reduced height for better grouping
-        )
-        bar_fig.update_layout(
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.15,
-                xanchor="center",
-                x=0.5,
-                bgcolor="rgba(255, 255, 255, 0.8)",
-                bordercolor="rgba(0, 0, 0, 0.2)",
-                borderwidth=1
-            ),
-            **LAYOUT_TEMPLATE
-        )
-        
-        return line_fig, bar_fig
+        if housing_amount is None or np.isnan(housing_amount):
+            housing_amount = baseline_housing
 
-    def calculate_impact_summary(summary: pd.DataFrame) -> Dict[str, float]:
-        """Calculate summary statistics of the prediction impact based on last year's data.
+        # Get baseline year data
+        baseline_data = annual_summary.loc[selected_year]
+        baseline_income = baseline_data["Total_Income"]
+        baseline_expenses = baseline_data["Expenses"]
+        baseline_savings = baseline_data["Savings"]
         
-        This function analyzes only the most recent 12 months of data to provide
-        more relevant predictions based on current spending patterns.
+        # Calculate income change
+        income_change = annual_income_target - baseline_income
         
-        Args:
-            summary: DataFrame with prediction data
-            
-        Returns:
-            Dictionary with impact metrics based on recent data
-        """
-        # Get the last 12 months of data
-        last_12_months = summary.iloc[-12:]
+        # Get months for the selected year
+        year_months = pd.period_range(start=f"{selected_year}-01", end=f"{selected_year}-12", freq="M")
         
-        # Calculate current metrics
-        current_savings = last_12_months["Savings"].sum()
-        current_monthly_avg = last_12_months["Savings"].mean()
+        # Create monthly DataFrame for the year
+        df = pd.DataFrame(index=year_months)
         
-        # Calculate predicted metrics
-        predicted_savings = last_12_months["Savings Predicted"].sum()
-        predicted_monthly_avg = last_12_months["Savings Predicted"].mean()
+        # Get actual monthly data for the year
+        year_income = income_monthly[income_monthly.index.year == selected_year]
+        year_expenses = expenses_monthly[expenses_monthly.index.year == selected_year]
         
-        # Calculate differences
-        monthly_difference = predicted_monthly_avg - current_monthly_avg
-        yearly_difference = predicted_savings - current_savings
+        # Fill with actual data, 0 for missing months
+        df["Income"] = year_income.reindex(year_months, fill_value=0.0)
+        df["Expenses"] = year_expenses.reindex(year_months, fill_value=0.0)
+        df["Savings"] = df["Income"] - df["Expenses"]
         
-        return {
-            # Monthly metrics (based on actual monthly average)
-            "current_monthly": current_monthly_avg,
-            "predicted_monthly": predicted_monthly_avg,
-            "difference_monthly": monthly_difference,
-            
-            # Yearly metrics (based on last 12 months)
-            "current_yearly": current_savings,
-            "predicted_yearly": predicted_savings,
-            "difference_yearly": yearly_difference
+        # Simulated income: distribute income change evenly across months
+        monthly_change = income_change / 12.0
+        df["Income (sim)"] = df["Income"] + monthly_change
+        
+        # Simulated expenses (adjust housing if specified)
+        df["Expenses (sim)"] = df["Expenses"].copy()
+        if housing_amount != baseline_housing:
+            housing_adjustment = housing_amount - baseline_housing
+            df["Expenses (sim)"] = df["Expenses (sim)"] + housing_adjustment
+        
+        df["Savings (sim)"] = df["Income (sim)"] - df["Expenses (sim)"]
+        
+        # Calculate annual KPIs
+        annual_kpis = {
+            "baseline_income": baseline_income,
+            "baseline_expenses": baseline_expenses,
+            "baseline_savings": baseline_savings,
+            "target_income": annual_income_target,
+            "income_change": income_change,
+            "target_savings": df["Savings (sim)"].sum(),
+            "savings_change": df["Savings (sim)"].sum() - baseline_savings,
+            "monthly_avg_current": df["Savings"].mean(),
+            "monthly_avg_simulated": df["Savings (sim)"].mean(),
+            "monthly_change": df["Savings (sim)"].mean() - df["Savings"].mean(),
+            "year_status": baseline_data["Status"],
         }
+        
+        return df, annual_kpis
 
-    def create_impact_summary_cards(impact: Dict[str, float]) -> List[dbc.Card]:
-        """Create Bootstrap cards showing impact summary statistics."""
-        def format_amount(amount: float, include_sign: bool = False) -> str:
-            """Format amount with euro symbol and optional sign."""
-            if include_sign and amount > 0:
-                return f"+€{amount:,.2f}"
-            return f"€{amount:,.2f}"
 
-        def get_color(amount: float) -> str:
-            """Get Bootstrap color class based on amount."""
-            if amount > 0:
-                return "success"
-            elif amount < 0:
-                return "danger"
-            return "warning"
+    def create_value_card(title: str, value: float, delta: Optional[float] = None) -> dbc.Card:
+        """Create a Bootstrap card showing a value with optional delta."""
+        def format_amount(x: float, show_sign: bool = False) -> str:
+            s = f"€{x:,.0f}"
+            if show_sign and x > 0:
+                return "+" + s
+            return s
 
-        return [
-            dbc.Card([
-                dbc.CardBody([
-                    html.H5("Monthly Impact", className="card-title"),
-                    html.P([
-                        "Current: ", format_amount(impact["current_monthly"]),
-                        html.Br(),
-                        "Predicted: ", format_amount(impact["predicted_monthly"]),
-                        html.Br(),
-                        html.Strong(
-                            ["Change: ", format_amount(impact["difference_monthly"], True)],
-                            className=f"text-{get_color(impact['difference_monthly'])}"
-                        ),
-                    ]),
-                ]),
-            ], className="shadow-sm mb-3"),
-            dbc.Card([
-                dbc.CardBody([
-                    html.H5("Yearly Impact", className="card-title"),
-                    html.P([
-                        "Current: ", format_amount(impact["current_yearly"]),
-                        html.Br(),
-                        "Predicted: ", format_amount(impact["predicted_yearly"]),
-                        html.Br(),
-                        html.Strong(
-                            ["Change: ", format_amount(impact["difference_yearly"], True)],
-                            className=f"text-{get_color(impact['difference_yearly'])}"
-                        ),
-                    ]),
-                ]),
-            ], className="shadow-sm mb-3"),
-        ]
+        color = "success" if (delta is not None and delta > 0) else ("danger" if (delta is not None and delta < 0) else "secondary")
+        body: List = [html.H5(title, className="card-title mb-1"), html.H3(format_amount(value), className="mb-2")]
+        if delta is not None:
+            body.append(html.Div([html.Span("Δ "), html.Strong(format_amount(delta, True), className=f"text-{color}")]))
+        return dbc.Card([dbc.CardBody(body)], className="info-card")
 
-    # Define the page layout
+    # Layout
     layout = html.Div([
         dbc.Row([
-            dbc.Col([
-                html.H1("Income Prediction Analysis"),
-                html.Hr(),
-            ]),
-        ]),
+            dbc.Col([html.H1("Annual Income & Housing Impact Analysis", className="section-title mb-0")], className="content-section py-3"),
+        ], className="mb-3"),
+        
         dbc.Row([
             dbc.Col([
                 dbc.Card([
                     dbc.CardBody([
-                        html.H4("Adjust Monthly 'Nomina' Income"),
-                        html.P(
-                            "Analyze how changes in your monthly salary would affect your savings.",
-                            className="text-muted",
-                        ),
-                        dbc.Input(
-                            id="input-number",
-                            type="number",
-                            placeholder=f"Current average: €{default_nomina:,.2f}",
-                            value=default_nomina,
-                            step=100,
-                            className="mb-3",
-                        ),
-                    ]),
-                ], className="shadow-sm mb-4"),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardBody([
-                        html.H4("Impact Analysis", className="mb-4"),
+                        html.Div([
+                            html.H4("Configure Annual Scenario", className="mb-3"),
+                            dbc.Row([
+                                dbc.Col([
+                                    dbc.Label("Baseline Year", className="form-label"),
+                                    dcc.Dropdown(
+                                        id="year-selector",
+                                        options=[
+                                            {"label": f"{year} ({annual_summary.loc[year, 'Status']})", "value": year}
+                                            for year in annual_summary.index
+                                        ],
+                                        value=default_year,
+                                        clearable=False,
+                                    ),
+                                    html.Small(
+                                        f"Default: Most recent complete year",
+                                        className="text-muted",
+                                    ),
+                                ], md=3),
+                                dbc.Col([
+                                    dbc.Label("Annual Income Target", className="form-label"),
+                                    dbc.Input(
+                                        id="annual-income",
+                                        type="number",
+                                        value=int(round(annual_summary.loc[default_year, "Total_Income"])),
+                                        step=1000,
+                                        min=0,
+                                    ),
+                                    html.Small(
+                                        id="annual-income-help",
+                                        className="text-muted",
+                                    ),
+                                ], md=3),
+                                dbc.Col([
+                                    dbc.Label("Monthly Housing", className="form-label"),
+                                    dbc.Input(
+                                        id="housing-amount",
+                                        type="number",
+                                        value=int(round(annual_summary.loc[default_year, "Housing"] / 12)),
+                                        step=50,
+                                        min=0,
+                                    ),
+                                    html.Small(
+                                        id="housing-help",
+                                        className="text-muted",
+                                    ),
+                                ], md=4),
+                            ])
+                        ], className="controls-section"),
+
                         dbc.Row([
-                            dbc.Col([
-                                html.Div(id="impact-summary"),
-                            ], md=4),
-                            dbc.Col([
-                                dcc.Graph(
-                                    id="pred-bar",
-                                    config=FIGURE_CONFIG,
-                                ),
-                            ], md=8),
+                            dbc.Col(html.Div(id="annual-kpis"), md=12)
+                        ], className="mb-3"),
+
+                        dbc.Row([
+                            dbc.Col(dcc.Graph(id="annual-chart", config=FIGURE_CONFIG), md=7),
+                            dbc.Col(dcc.Graph(id="monthly-chart", config=FIGURE_CONFIG), md=5),
                         ]),
-                    ]),
-                ], className="shadow-sm mb-4"),
-            ]),
-        ]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardBody([
-                        html.H4("Trends Analysis", className="mb-4"),
-                        dcc.Graph(
-                            id="pred-line",
-                            config=FIGURE_CONFIG,
-                        ),
-                    ]),
-                ], className="shadow-sm"),
-            ]),
+                    ])
+                ], className="content-section"),
+            ])
         ]),
     ])
 
+    def create_annual_chart(annual_summary: pd.DataFrame, selected_year: int, annual_kpis: Dict) -> dict:
+        """Create annual comparison chart."""
+        fig = go.Figure()
+        
+        # Add actual savings bars
+        fig.add_trace(go.Bar(
+            x=annual_summary.index,
+            y=annual_summary["Savings"],
+            name="Actual Savings",
+            marker_color=COLORS["Savings"],
+            opacity=0.8
+        ))
+        
+        # Add simulated savings for selected year
+        fig.add_trace(go.Bar(
+            x=[selected_year],
+            y=[annual_kpis["target_savings"]],
+            name="Simulated Savings",
+            marker_color=COLORS["Savings (simulated)"],
+            opacity=0.8
+        ))
+        
+        # Add break-even line
+        fig.add_hline(y=0, line_dash="dash", line_color=COLORS["Break-even"], 
+                     annotation_text="Break-even", annotation_position="bottom right")
+        
+        fig.update_layout(
+            title="Annual Savings Comparison",
+            xaxis_title="Year",
+            yaxis_title="€",
+            barmode="group",
+            template="plotly_white",
+            height=400,
+            **LAYOUT_TEMPLATE
+        )
+        
+        return fig
+
+    def create_monthly_chart(monthly_df: pd.DataFrame) -> dict:
+        """Create monthly distribution chart."""
+        df_plot = monthly_df[["Savings", "Savings (sim)"]].copy()
+        df_plot.index = df_plot.index.astype(str)
+        
+        fig = px.line(
+            df_plot,
+            labels={"value": "€", "index": "Month"},
+            markers=True,
+            title="Monthly Savings Distribution",
+            color_discrete_map={"Savings": COLORS["Savings"], "Savings (sim)": COLORS["Savings (simulated)"]},
+            template="plotly_white",
+            height=400,
+        )
+        
+        # Add break-even line
+        months = list(df_plot.index)
+        fig.add_trace(
+            go.Scatter(
+                x=months,
+                y=[0] * len(months),
+                name="Break-even",
+                line={"dash": "dash", "color": COLORS["Break-even"]},
+                hovertemplate="€0",
+            )
+        )
+        
+        fig.update_layout(
+            legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5),
+            **LAYOUT_TEMPLATE
+        )
+        
+        return fig
+
     @callback(
-        [
-            Output("pred-line", "figure"),
-            Output("pred-bar", "figure"),
-            Output("impact-summary", "children")
-        ],
-        Input("input-number", "value"),
+        [Output("annual-income", "value"), Output("annual-income-help", "children"), Output("housing-help", "children")],
+        Input("year-selector", "value"),
     )
-    def update_predictions(value: Optional[float]) -> Tuple[dict, dict, List[dbc.Card]]:
-        """Update all predictions based on new Nomina value.
+    def update_inputs_when_year_changes(selected_year: int) -> Tuple[int, str, str]:
+        """Update annual income input and help texts when year selector changes."""
+        current_income = int(round(annual_summary.loc[selected_year, "Total_Income"]))
+        income_help_text = f"Current {selected_year}: €{current_income:,}"
         
-        Args:
-            value: New monthly Nomina amount
-            
-        Returns:
-            Tuple of (line_figure, bar_figure, impact_summary_cards)
-        """
-        # Calculate predictions
-        summary = calculate_predictions(value)
+        # Calculate average housing for the selected year
+        year_housing = housing_monthly[housing_monthly.index.year == selected_year]
+        if len(year_housing) > 0:
+            avg_housing = int(round(year_housing.mean()))
+        else:
+            avg_housing = 0
+        housing_help_text = f"Current monthly: €{avg_housing:,}"
         
-        # Create figures
-        line_fig, bar_fig = create_prediction_figures(summary)
+        return current_income, income_help_text, housing_help_text
+
+    @callback(
+        [Output("annual-chart", "figure"), Output("monthly-chart", "figure"), Output("annual-kpis", "children")],
+        [Input("year-selector", "value"), Input("annual-income", "value"), Input("housing-amount", "value")],
+    )
+    def update_annual_analysis(selected_year: int, annual_income: Optional[float], housing_value: Optional[float]) -> Tuple[dict, dict, List[dbc.Card]]:
+        """Update annual analysis based on all input parameters."""
+        # Handle inputs
+        if annual_income is None or (isinstance(annual_income, float) and np.isnan(annual_income)):
+            annual_income = int(round(annual_summary.loc[selected_year, "Total_Income"]))
         
-        # Calculate and format impact summary
-        impact = calculate_impact_summary(summary)
-        impact_cards = create_impact_summary_cards(impact)
+        if housing_value is None or (isinstance(housing_value, float) and np.isnan(housing_value)):
+            # Calculate baseline housing for the selected year
+            year_housing = housing_monthly[housing_monthly.index.year == selected_year]
+            housing_value = int(round(year_housing.mean())) if len(year_housing) > 0 else 0
+
+        # Build analysis
+        monthly_df, annual_kpis = build_annual_analysis(selected_year, annual_income, housing_value)
         
-        return line_fig, bar_fig, impact_cards
+        # Calculate baseline housing for KPI display
+        year_housing = housing_monthly[housing_monthly.index.year == selected_year]
+        baseline_housing = int(round(year_housing.mean())) if len(year_housing) > 0 else 0
+        
+        # Create charts
+        annual_fig = create_annual_chart(annual_summary, selected_year, annual_kpis)
+        monthly_fig = create_monthly_chart(monthly_df)
+        
+        # Create KPI cards
+        cards = [
+            dbc.Row([
+                dbc.Col(create_value_card("Annual Savings (Baseline)", annual_kpis["baseline_savings"]), md=3),
+                dbc.Col(create_value_card("Annual Savings (Simulated)", annual_kpis["target_savings"], annual_kpis["savings_change"]), md=3),
+                dbc.Col(create_value_card("Annual Δ", annual_kpis["savings_change"]), md=3),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H5("Year Status", className="card-title mb-1"),
+                            html.H3([
+                                html.Span("●", className=f"text-{'success' if annual_kpis['year_status'] == 'Complete' else 'warning'} me-2"),
+                                annual_kpis['year_status']
+                            ], className="mb-0"),
+                        ])
+                    ], className="info-card")
+                ], md=3),
+            ], className="mb-2"),
+            dbc.Row([
+                dbc.Col(create_value_card("Monthly Avg (Current)", annual_kpis["monthly_avg_current"]), md=3),
+                dbc.Col(create_value_card("Monthly Avg (Simulated)", annual_kpis["monthly_avg_simulated"], annual_kpis["monthly_change"]), md=3),
+                dbc.Col(create_value_card("Monthly Δ", annual_kpis["monthly_change"]), md=3),
+                dbc.Col(create_value_card("Housing Δ", housing_value - baseline_housing), md=3),
+            ]),
+        ]
+        
+        return annual_fig, monthly_fig, cards
 
 except Exception as e:
-    # Fallback layout if data loading fails
-    layout = dbc.Alert(
-        [
-            html.H4("Data Loading Error", className="alert-heading"),
-            html.P(f"Failed to load data: {str(e)}"),
-            html.Hr(),
-            html.P(
-                "Please check your configuration and ensure the data files exist.",
-                className="mb-0"
-            ),
-        ],
-        color="danger",
-        className="m-3",
-    ) 
+    layout = generate_alert_layout(e)

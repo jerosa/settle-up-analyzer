@@ -2,7 +2,7 @@
 import base64
 import io
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import dash
 import dash_bootstrap_components as dbc
@@ -12,7 +12,6 @@ from pandas import DataFrame
 
 from finanalyzer.core.analyzer import Analyzer
 from finanalyzer.core.config import config
-from finanalyzer.core.utils import safe_read_excel
 
 # Register the page
 dash.register_page(
@@ -73,6 +72,8 @@ def create_data_table(df: DataFrame) -> dash_table.DataTable:
         style_table={
             "overflowX": "auto",
             "backgroundColor": "white",
+            "borderRadius": "8px",
+            "boxShadow": "0 2px 4px rgba(0, 0, 0, 0.05)",
         },
         style_data={
             "width": "150px",
@@ -80,16 +81,32 @@ def create_data_table(df: DataFrame) -> dash_table.DataTable:
             "maxWidth": "150px",
             "overflow": "hidden",
             "textOverflow": "ellipsis",
+            "backgroundColor": "white",
+            "border": "1px solid #f1f1f1",
         },
+        style_data_conditional=[
+            {
+                "if": {"row_index": "odd"},
+                "backgroundColor": "#f8f9fa",
+            }
+        ],
         style_header={
-            "backgroundColor": "rgb(230, 230, 230)",
-            "fontWeight": "bold",
+            "backgroundColor": "#f8f9fa",
+            "fontWeight": "600",
             "textAlign": "center",
+            "border": "1px solid #dee2e6",
+            "borderBottom": "2px solid #dee2e6",
+            "color": "#495057",
         },
         style_cell={
-            "fontFamily": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif",
+            "fontFamily": "Arial, sans-serif",
             "fontSize": "14px",
-            "padding": "10px",
+            "padding": "12px",
+            "textAlign": "left",
+        },
+        style_filter={
+            "backgroundColor": "#f8f9fa",
+            "padding": "8px",
         },
         tooltip_data=[
             {
@@ -119,7 +136,7 @@ def parse_uploaded_file(
     """
     try:
         # Parse content
-        content_type, content_string = contents.split(",")
+        _, content_string = contents.split(",")
         decoded = base64.b64decode(content_string)
         
         # Read file based on type
@@ -161,6 +178,7 @@ def create_upload_result(
                     html.P(error),
                 ],
                 color="danger",
+                className="content-section",
             )
         ])
         
@@ -168,18 +186,20 @@ def create_upload_result(
     
     if filename and date:
         children.extend([
-            html.H5(filename, className="text-muted"),
-            html.H6(
-                datetime.fromtimestamp(date).strftime("%Y-%m-%d %H:%M:%S"),
-                className="text-muted mb-4",
-            ),
+            html.Div([
+                html.H5(filename, className="mb-1"),
+                html.H6(
+                    datetime.fromtimestamp(date).strftime("%Y-%m-%d %H:%M:%S"),
+                    className="text-muted",
+                ),
+            ], className="mb-4"),
         ])
         
     if df is not None:
         children.append(
             dbc.Card(
                 dbc.CardBody(create_data_table(df)),
-                className="shadow-sm",
+                className="content-section",
             )
         )
         
@@ -190,10 +210,10 @@ def create_upload_result(
 layout = html.Div([
     dbc.Row([
         dbc.Col([
-            html.H1("Expenses Table"),
-            html.Hr(),
-        ]),
-    ]),
+            html.H1("Expenses Table", className="section-title mb-0"),
+        ], className="content-section py-3"),
+    ], className="mb-3"),
+    
     dbc.Row([
         dbc.Col([
             dbc.Card([
@@ -208,22 +228,24 @@ layout = html.Div([
                                         "Upload File",
                                     ],
                                     color="primary",
+                                    className="upload-button",
                                 ),
                                 multiple=False,
+                                className="upload-container",
                             ),
                         ], width="auto"),
                         dbc.Col([
                             html.P(
                                 "Upload a CSV or Excel file to view and analyze expenses data.",
-                                className="text-muted mb-0",
-                                style={"marginTop": "8px"},
+                                className="text-muted mb-0 upload-text",
                             ),
                         ]),
-                    ]),
+                    ], align="center"),
                 ]),
-            ], className="shadow-sm mb-4"),
+            ], className="graph-container"),
         ]),
-    ]),
+    ], className="mb-4"),
+    
     dbc.Row([
         dbc.Col([
             html.Div(id="output-data-upload"),

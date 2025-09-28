@@ -11,6 +11,7 @@ app = dash.Dash(
         dbc.themes.BOOTSTRAP,
         dbc.icons.FONT_AWESOME,
         "/assets/responsive-sidebar.css",
+        "/assets/custom-styles.css",
     ],
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1"}
@@ -59,7 +60,12 @@ sidebar = html.Div(
                 [
                     dbc.NavLink(
                         [
-                            html.I(className="fas fa-home me-2"),
+                            html.I(className={
+                                "/": "fas fa-home me-2",
+                                "/categories": "fas fa-chart-pie me-2",
+                                "/predict": "fas fa-chart-line me-2",
+                                "/table": "fas fa-table me-2",
+                            }.get(page["path"], "fas fa-home me-2")),
                             page["name"],
                         ],
                         href=page["path"],

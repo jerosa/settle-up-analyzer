@@ -1,0 +1,444 @@
+/* Custom styles to improve spacing and readability */
+
+/* General spacing improvements */
+.content-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 120ms ease-out, background-color 120ms ease-out;
+}
+
+/* Reduced padding for title sections */
+.content-section.py-3 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.content-section:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+    color: #495057;
+    font-weight: 500;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+/* Remove bottom margin when mb-0 class is applied */
+.section-title.mb-0 {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Graph container styling */
+.graph-container {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+
+/* Card styling improvements */
+.info-card {
+    margin-bottom: 1.5rem;
+    border: none;
+}
+
+
+.card-header {
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* Dropdown styling */
+.year-dropdown-container {
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.year-dropdown-container:last-child {
+    margin-bottom: 0;
+}
+
+.year-dropdown-container label {
+    margin-right: 1rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Form controls */
+.form-control {
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    transition: border-color 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+/* Table improvements */
+.table {
+    margin-bottom: 0;
+    background-color: #ffffff;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td,
+.table th {
+    padding: 0.75rem;
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+}
+
+.table tr:hover {
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+/* Graph row spacing */
+.graph-row {
+    margin-bottom: 2rem;
+}
+
+/* Text styling */
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Input styling */
+.form-control[type="number"] {
+    font-size: 1.1rem;
+    height: calc(1.5em + 1rem + 2px);
+}
+
+/* Dropdown improvements */
+.Select-control {
+    border-color: #dee2e6;
+    border-radius: 4px;
+    transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+.Select-control:hover {
+    border-color: #80bdff;
+}
+
+.Select.is-focused>.Select-control {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Loading states */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Tab styling */
+.nav-tabs-custom {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.nav-tabs-custom .nav-link {
+    color: #495057;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1rem;
+    margin-right: 1rem;
+    font-weight: 500;
+    transition: color 120ms ease-out, border-bottom-color 120ms ease-out;
+}
+
+.nav-tabs-custom .nav-link:hover {
+    color: #007bff;
+    border-bottom-color: rgba(0, 123, 255, 0.2);
+}
+
+.nav-tabs-custom .nav-link.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background-color: transparent;
+}
+
+/* Upload styling */
+.upload-container {
+    display: inline-block;
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out;
+}
+
+.upload-button {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out, color 120ms ease-out;
+}
+
+.upload-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 3px rgba(0, 123, 255, 0.16);
+}
+
+.upload-text {
+    margin-top: 0 !important;
+    padding: 0.5rem 0;
+}
+
+/* DataTable improvements */
+.dash-table-container {
+    font-family: Arial, sans-serif;
+}
+
+.dash-spreadsheet-container {
+    box-shadow: none !important;
+}
+
+.dash-spreadsheet-inner td,
+.dash-spreadsheet-inner th {
+    font-family: Arial, sans-serif !important;
+    border-color: #dee2e6 !important;
+}
+
+.dash-spreadsheet-inner th {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.dash-filter--case-sensitive {
+    border-color: #dee2e6 !important;
+    border-radius: 4px !important;
+}
+
+.dash-filter--case-sensitive:focus {
+    border-color: #80bdff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-section {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .graph-container {
+        padding: 0.5rem;
+    }
+}
+
+/* Controls section styling */
+.controls-section {
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Graph content styling */
+.graph-content {
+    margin-top: 1rem;
+}
+
+.graph-content .section-title {
+    font-size: 1.25rem;
+    padding-bottom: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.graph-content .section-title:first-child {
+    margin-top: 0;
+}
+
+/* Quick stats styling */
+.quick-stat {
+    text-align: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: background-color 120ms ease-out, transform 120ms ease-out;
+}
+
+.quick-stat:hover {
+    background-color: #f1f3f5;
+    transform: translateY(-1px);
+}
+
+.stats-label {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.stats-value {
+    color: #495057;
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+/* Filter container styling */
+.filter-container {
+    background-color: #f8f9fa;
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    color: #dee2e6;
+}
+
+.empty-state h4 {
+    margin: 1rem 0;
+    color: #495057;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+/* Graph wrapper styling */
+.graph-wrapper {
+    position: relative;
+    min-height: 400px;
+}
+
+/* Button group styling */
+.btn-group .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.25rem;
+}
+
+.modal-body {
+    padding: 1.25rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1.25rem;
+}
+
+/* Form styling in modals */
+.modal .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+/* Alert styling */
+.alert-info {
+    background-color: #e8f4f8;
+    border-color: #d1e7f0;
+    color: #0c5460;
+}
+
+.alert-info .alert-heading {
+    color: #0c5460;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.alert-info i {
+    color: #17a2b8;
+}
+
+/* Loading spinner styling */
+.spinner-border {
+    color: #007bff;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 0.15em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quick-stat {
+        margin-bottom: 1rem;
+    }
+
+    .filter-container {
+        padding: 1rem;
+    }
+
+    .btn-group {
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+}
